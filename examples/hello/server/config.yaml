@@ -1,0 +1,9 @@
+app:
+  name: "example"
+  addr: "127.0.0.1:5188"
+rpc:
+  basePath: /zmicro
+  updateInterval: 30
+#  etcdAddr:
+#    - 127.0.0.1:2379
+

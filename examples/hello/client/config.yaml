@@ -1,0 +1,4 @@
+rpc:
+  basePath: /zmicro
+#  etcdAddr:
+#    - 127.0.0.1:2379
