@@ -1,0 +1,6 @@
+app:
+  name: "example"
+  addr: "127.0.0.1:5188"
+  enableHttp: true
+http:
+  model: "debug"

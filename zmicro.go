@@ -27,8 +27,10 @@ type App struct {
 }
 
 type appConfig struct {
-	Name string
-	Addr string
+	Name       string
+	Addr       string
+	EnableRpc  bool
+	EnableHttp bool
 }
 
 func New(opts ...Option) *App {
@@ -47,8 +49,20 @@ func New(opts ...Option) *App {
 	if err = config.Scan("app", &conf); err != nil {
 		log.Fatal(err)
 	}
-	app := &App{opts: options, conf: &conf, rpcServer: server.NewServer()}
-	app.rpcServer.Init(server.WithInitRpcServer(app.opts.InitRpcServer))
+	app := &App{
+		opts: options,
+		conf: &conf,
+	}
+
+	if conf.EnableRpc {
+		app.rpcServer = server.NewServer()
+		app.rpcServer.Init(server.WithInitRpcServer(app.opts.InitRpcServer))
+	}
+	if conf.EnableHttp {
+		app.httpServer = http.NewServer()
+		app.httpServer.Init(http.WithInitHttpServer(app.opts.InitHttpServer))
+	}
+
 	return app
 }
 

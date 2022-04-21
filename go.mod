@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/fsnotify/fsnotify v1.5.1
+	github.com/gin-gonic/gin v1.7.7
 	github.com/golang/protobuf v1.5.2
 	github.com/rpcxio/rpcx-etcd v0.1.0
 	github.com/smallnest/rpcx v1.7.4
@@ -25,9 +26,13 @@ require (
 	github.com/edwingeng/doublejump v0.0.0-20210724020454-c82f1bcb3280 // indirect
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ping/ping v0.0.0-20211130115550-779d1e919534 // indirect
+	github.com/go-playground/locales v0.13.0 // indirect
+	github.com/go-playground/universal-translator v0.17.0 // indirect
+	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -50,6 +55,7 @@ require (
 	github.com/kavu/go_reuseport v1.5.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.12 // indirect
 	github.com/klauspost/reedsolomon v1.9.16 // indirect
+	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/lucas-clemente/quic-go v0.27.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/marten-seemann/qtls-go1-16 v0.1.5 // indirect
@@ -84,6 +90,7 @@ require (
 	github.com/templexxx/xor v0.0.0-20191217153810-f85b25db303b // indirect
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
+	github.com/ugorji/go/codec v1.1.7 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fastrand v1.1.0 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
