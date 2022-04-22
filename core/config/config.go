@@ -2,7 +2,7 @@ package config
 
 import (
 	"time"
-	
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 )
@@ -20,6 +20,10 @@ func NewConfig(opts ...Option) (*config, error) {
 	options := Options{
 		Type: "yaml",
 		Path: "config.yaml",
+	}
+
+	for _, o := range opts {
+		o(&options)
 	}
 
 	c := config{
