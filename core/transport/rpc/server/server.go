@@ -2,11 +2,11 @@ package server
 
 import (
 	"context"
-	"log"
 	"net"
 	"time"
 
 	"github.com/iobrother/zmicro/core/config"
+	"github.com/iobrother/zmicro/core/log"
 	"github.com/rpcxio/rpcx-etcd/serverplugin"
 	"github.com/smallnest/rpcx/server"
 )
@@ -29,13 +29,12 @@ func NewServer(opts ...Option) *Server {
 
 	conf := rpcConfig{}
 	if err := config.Scan("rpc", &conf); err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 	srv := &Server{
 		opts: options,
 		conf: &conf,
 	}
-	log.Println(srv.conf.BasePath)
 	srv.server = server.NewServer()
 	return srv
 }
@@ -49,7 +48,7 @@ func (s *Server) Init(opts ...Option) error {
 
 func (s *Server) Start(l net.Listener) error {
 	addr := l.Addr().String()
-	log.Printf("Server [RPCX] listening On %s", addr)
+	log.Infof("Server [RPCX] listening On %s", addr)
 	s.register(addr)
 
 	if s.opts.InitRpcServer != nil {
@@ -58,14 +57,14 @@ func (s *Server) Start(l net.Listener) error {
 
 	go func() {
 		if err := s.server.ServeListener("tcp", l); err != nil {
-			log.Fatal(err)
+			log.Fatal(err.Error())
 		}
 	}()
 	return nil
 }
 
 func (s *Server) Stop() error {
-	log.Println("Server [RPCX] stopping")
+	log.Info("Server [RPCX] stopping")
 	_ = s.server.Shutdown(context.Background())
 	return nil
 }
@@ -82,10 +81,10 @@ func (s *Server) register(addr string) {
 	}
 	err := r.Start()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 	s.server.Plugins.Add(r)
 
 	s.registry = r
-	log.Printf("Registering server: %s", addr)
+	log.Infof("Registering server: %s", addr)
 }

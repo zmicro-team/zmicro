@@ -1,9 +1,8 @@
 package client
 
 import (
-	"log"
-
 	"github.com/iobrother/zmicro/core/config"
+	"github.com/iobrother/zmicro/core/log"
 	etcd_client "github.com/rpcxio/rpcx-etcd/client"
 	"github.com/smallnest/rpcx/client"
 	"github.com/smallnest/rpcx/protocol"
@@ -36,7 +35,7 @@ func NewClient(opts ...Option) *Client {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal(err.Error())
 		}
 		opt := client.DefaultOption
 		opt.SerializeType = protocol.ProtoBuffer
@@ -50,7 +49,7 @@ func NewClient(opts ...Option) *Client {
 	} else {
 		d, err := client.NewPeer2PeerDiscovery("tcp@"+c.opts.ServiceAddr, "")
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal(err.Error())
 		}
 
 		opt := client.DefaultOption

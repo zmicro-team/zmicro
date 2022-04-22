@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/iobrother/zmicro"
+	"github.com/iobrother/zmicro/core/log"
 	"github.com/iobrother/zmicro/examples/hello/proto"
 	"github.com/smallnest/rpcx/server"
 )
@@ -14,7 +14,7 @@ func main() {
 	app := zmicro.New(zmicro.WithInitRpcServer(InitRpcServer))
 
 	if err := app.Run(); err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 }
 

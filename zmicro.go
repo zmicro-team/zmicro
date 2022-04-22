@@ -2,13 +2,13 @@ package zmicro
 
 import (
 	"flag"
-	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/iobrother/zmicro/core/config"
+	"github.com/iobrother/zmicro/core/log"
 	"github.com/iobrother/zmicro/core/transport/http"
 	"github.com/iobrother/zmicro/core/transport/rpc/server"
 )
@@ -42,12 +42,12 @@ func New(opts ...Option) *App {
 	}
 
 	if config.DefaultConfig, err = config.NewConfig(config.Path(cfgFile)); err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 
 	conf := appConfig{}
 	if err = config.Scan("app", &conf); err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 	app := &App{
 		opts: options,
@@ -87,7 +87,7 @@ func (a *App) Run() error {
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL)
-	log.Printf("received signal %s", <-ch)
+	log.Infof("received signal %s", <-ch)
 
 	if a.rpcServer != nil {
 		a.rpcServer.Stop()

@@ -3,13 +3,13 @@ package http
 import (
 	"context"
 	"errors"
-	"log"
 	"net"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/iobrother/zmicro/core/config"
+	"github.com/iobrother/zmicro/core/log"
 )
 
 type Server struct {
@@ -28,7 +28,7 @@ func NewServer(opts ...Option) *Server {
 	options := newOptions(opts...)
 	conf := httpConfig{}
 	if err := config.Scan("rpc", &conf); err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 
 	srv := &Server{
@@ -58,7 +58,7 @@ func (s *Server) Start(l net.Listener) error {
 	go func() {
 		if err := s.server.Serve(l); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
-				log.Fatal(err)
+				log.Fatal(err.Error())
 			}
 		}
 	}()
