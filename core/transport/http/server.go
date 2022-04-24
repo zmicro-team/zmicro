@@ -51,6 +51,8 @@ func (s *Server) Init(opts ...Option) error {
 }
 
 func (s *Server) Start(l net.Listener) error {
+	addr := l.Addr().String()
+	log.Infof("Server [GIN] listening On %s", addr)
 	if s.opts.InitHttpServer != nil {
 		s.opts.InitHttpServer(s.Engine)
 	}
