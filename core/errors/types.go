@@ -16,7 +16,7 @@ func ErrBadRequest(detail string) *Error {
 }
 
 // ErrBadRequestf new BadRequest error that is mapped to a 400 response.
-func ErrBadRequestf(format string, args ...interface{}) *Error {
+func ErrBadRequestf(format string, args ...any) *Error {
 	return New(400, "请求参数错误", fmt.Sprintf(format, args...))
 }
 
@@ -32,7 +32,7 @@ func ErrUnauthorized(detail string) *Error {
 }
 
 // ErrUnauthorizedf new Unauthorized error that is mapped to a 401 response.
-func ErrUnauthorizedf(format string, args ...interface{}) *Error {
+func ErrUnauthorizedf(format string, args ...any) *Error {
 	return Newf(401, "未授权", fmt.Sprintf(format, args...))
 }
 
@@ -48,7 +48,7 @@ func ErrForbidden(detail string) *Error {
 }
 
 // ErrForbiddenf new Forbidden error that is mapped to a 403 response.
-func ErrForbiddenf(format string, args ...interface{}) *Error {
+func ErrForbiddenf(format string, args ...any) *Error {
 	return Newf(403, "禁止访问", fmt.Sprintf(format, args...))
 }
 
@@ -64,7 +64,7 @@ func ErrNotFound(detail string) *Error {
 }
 
 // ErrNotFoundf new NotFound error that is mapped to a 404 response.
-func ErrNotFoundf(format string, args ...interface{}) *Error {
+func ErrNotFoundf(format string, args ...any) *Error {
 	return Newf(404, "没有找到,已删除或不存在", fmt.Sprintf(format, args...))
 }
 
@@ -80,7 +80,7 @@ func ErrConflict(detail string) *Error {
 }
 
 // ErrConflictf new Conflict error that is mapped to a 409 response.
-func ErrConflictf(format string, args ...interface{}) *Error {
+func ErrConflictf(format string, args ...any) *Error {
 	return Newf(409, "资源冲突", fmt.Sprintf(format, args...))
 }
 
@@ -90,7 +90,7 @@ func IsInternalServer(err error) bool {
 func ErrInternalServer(detail string) *Error {
 	return New(500, "服务器错误", detail)
 }
-func ErrInternalServerf(format string, args ...interface{}) *Error {
+func ErrInternalServerf(format string, args ...any) *Error {
 	return New(500, "服务器错误", fmt.Sprintf(format, args...))
 }
 
@@ -106,7 +106,7 @@ func ErrServiceUnavailable(detail string) *Error {
 }
 
 // ErrServiceUnavailablef new ServiceUnavailable error that is mapped to a HTTP 503 response.
-func ErrServiceUnavailablef(format string, args ...interface{}) *Error {
+func ErrServiceUnavailablef(format string, args ...any) *Error {
 	return Newf(503, "服务器不可用", fmt.Sprintf(format, args...))
 }
 
@@ -122,7 +122,7 @@ func ErrGatewayTimeout(detail string) *Error {
 }
 
 // ErrGatewayTimeoutf new GatewayTimeout error that is mapped to a HTTP 504 response.
-func ErrGatewayTimeoutf(format string, args ...interface{}) *Error {
+func ErrGatewayTimeoutf(format string, args ...any) *Error {
 	return Newf(504, "网关超时", fmt.Sprintf(format, args...))
 }
 
@@ -138,6 +138,6 @@ func ErrClientClosed(message string) *Error {
 }
 
 // ErrClientClosedf new ClientClosed error that is mapped to a HTTP 499 response.
-func ErrClientClosedf(format string, args ...interface{}) *Error {
+func ErrClientClosedf(format string, args ...any) *Error {
 	return Newf(499, "客户端关闭", fmt.Sprintf(format, args...))
 }

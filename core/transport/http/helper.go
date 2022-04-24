@@ -23,11 +23,11 @@ func Error(c *gin.Context, err error) {
 	c.Abort()
 }
 
-func JSON(c *gin.Context, data interface{}) {
+func JSON(c *gin.Context, data any) {
 	c.JSON(http.StatusOK, data)
 }
 
-//func Data(c *gin.Context, data interface{}) {
+//func Data(c *gin.Context, data any) {
 //
 //}
 
@@ -44,7 +44,7 @@ func FromContext(ctx context.Context) (c *gin.Context, ok bool) {
 
 type Implemented struct{}
 
-func (*Implemented) Validate(ctx context.Context, v interface{}) error {
+func (*Implemented) Validate(ctx context.Context, v any) error {
 	return Validate(ctx, v)
 }
 

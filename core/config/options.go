@@ -22,7 +22,7 @@ func Path(p string) Option {
 	}
 }
 
-func SetOption(k, v interface{}) Option {
+func SetOption(k, v any) Option {
 	return func(opts *Options) {
 		if opts.Context == nil {
 			opts.Context = context.Background()

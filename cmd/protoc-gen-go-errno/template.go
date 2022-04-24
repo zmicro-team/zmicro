@@ -50,7 +50,7 @@ func Err{{.CamelValue}}({{if or (eq .Code 400) (eq .Code 500)}}detail string{{el
     return Err{{.CamelValue}}w()
 {{- end}}
 }
-func Err{{.CamelValue}}f(format string, args ...interface{}) *errors.Error {
+func Err{{.CamelValue}}f(format string, args ...any) *errors.Error {
 {{- if or (eq .Code 400) (eq .Code 500)}}
 	 return errors.New({{.Code}}, "{{.Message}}", fmt.Sprintf(format, args...))
 {{- else}}

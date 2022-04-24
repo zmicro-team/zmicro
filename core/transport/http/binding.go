@@ -23,7 +23,7 @@ func Validator() *validator.Validate {
 	return defaultValidator
 }
 
-func Validate(ctx context.Context, v interface{}) error {
+func Validate(ctx context.Context, v any) error {
 	if disableBindValidation {
 		return nil
 	}

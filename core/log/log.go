@@ -51,31 +51,31 @@ func (l *Logger) Fatal(msg string, fields ...Field) {
 	l.l.Fatal(msg, fields...)
 }
 
-func (l *Logger) Debugf(template string, args ...interface{}) {
+func (l *Logger) Debugf(template string, args ...any) {
 	l.l.Sugar().Debugf(template, args...)
 }
 
-func (l *Logger) Infof(template string, args ...interface{}) {
+func (l *Logger) Infof(template string, args ...any) {
 	l.l.Sugar().Infof(template, args...)
 }
 
-func (l *Logger) Warnf(template string, args ...interface{}) {
+func (l *Logger) Warnf(template string, args ...any) {
 	l.l.Sugar().Warnf(template, args...)
 }
 
-func (l *Logger) Errorf(template string, args ...interface{}) {
+func (l *Logger) Errorf(template string, args ...any) {
 	l.l.Sugar().Errorf(template, args...)
 }
 
-func (l *Logger) DPanicf(template string, args ...interface{}) {
+func (l *Logger) DPanicf(template string, args ...any) {
 	l.l.Sugar().DPanicf(template, args...)
 }
 
-func (l *Logger) Panicf(template string, args ...interface{}) {
+func (l *Logger) Panicf(template string, args ...any) {
 	l.l.Sugar().Panicf(template, args...)
 }
 
-func (l *Logger) Fatalf(template string, args ...interface{}) {
+func (l *Logger) Fatalf(template string, args ...any) {
 	l.l.Sugar().Fatalf(template, args...)
 }
 
@@ -148,7 +148,7 @@ var (
 
 func ResetDefault(l *Logger) {
 	defaultLogger = l
-	
+
 	Info = defaultLogger.Info
 	Warn = defaultLogger.Warn
 	Error = defaultLogger.Error

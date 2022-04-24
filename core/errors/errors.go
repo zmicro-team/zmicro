@@ -14,11 +14,11 @@ func New(code int, message, detail string) *Error {
 	}
 }
 
-func Newf(code int, message, format string, a ...interface{}) *Error {
+func Newf(code int, message, format string, a ...any) *Error {
 	return New(code, message, fmt.Sprintf(format, a...))
 }
 
-func Errorf(code int, message, format string, a ...interface{}) error {
+func Errorf(code int, message, format string, a ...any) error {
 	return New(code, message, fmt.Sprintf(format, a...))
 }
 

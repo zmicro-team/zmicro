@@ -74,11 +74,11 @@ func (c *Config) load() error {
 	return nil
 }
 
-func (c *Config) Scan(key string, val interface{}) error {
+func (c *Config) Scan(key string, val any) error {
 	return c.v.UnmarshalKey(key, val)
 }
 
-func (c *Config) Get(key string) interface{} {
+func (c *Config) Get(key string) any {
 	return c.v.Get(key)
 }
 
@@ -110,7 +110,7 @@ func (c *Config) GetStringSlice(key string) []string {
 	return c.v.GetStringSlice(key)
 }
 
-func (c *Config) GetStringMap(key string) map[string]interface{} {
+func (c *Config) GetStringMap(key string) map[string]any {
 	return c.v.GetStringMap(key)
 }
 
