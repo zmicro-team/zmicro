@@ -25,9 +25,7 @@ func main() {
 		log.Fatal("config file not exists")
 	}
 
-	if config.DefaultConfig, err = config.NewConfig(config.Path(cfgFile)); err != nil {
-		log.Fatal(err.Error())
-	}
+	config.ResetDefault(config.New(config.Path(cfgFile)))
 
 	c := client.NewClient(client.WithServiceName("Greeter"), client.WithServiceAddr("127.0.0.1:5188"))
 	cli := proto.NewGreeterClient(c.GetXClient())

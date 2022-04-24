@@ -41,9 +41,8 @@ func New(opts ...Option) *App {
 		log.Fatal("config file not exists")
 	}
 
-	if config.DefaultConfig, err = config.NewConfig(config.Path(cfgFile)); err != nil {
-		log.Fatal(err.Error())
-	}
+	c := config.New(config.Path(cfgFile))
+	config.ResetDefault(c)
 
 	conf := appConfig{}
 	if err = config.Scan("app", &conf); err != nil {

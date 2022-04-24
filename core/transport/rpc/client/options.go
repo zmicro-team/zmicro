@@ -23,7 +23,7 @@ func NewClient(opts ...Option) *Client {
 	options := newOptions(opts...)
 
 	conf := clientConfig{}
-	config.DefaultConfig.Scan("rpc", &conf)
+	config.Scan("rpc", &conf)
 	c := &Client{opts: options, conf: &conf}
 
 	if len(c.conf.EtcdAddr) > 0 {
