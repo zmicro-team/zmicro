@@ -168,8 +168,10 @@ func ResetDefault(l *Logger) {
 }
 
 type Logger struct {
-	l  *zap.Logger
-	lv *zap.AtomicLevel
+	l           *zap.Logger
+	lv          *zap.AtomicLevel
+	development bool
+	addCaller   bool
 }
 
 var defaultLogger = New(os.Stderr, InfoLevel, WithCaller(true))
@@ -178,34 +180,47 @@ func Default() *Logger {
 	return defaultLogger
 }
 
-type Option = zap.Option
-
-var (
-	WithCaller    = zap.WithCaller
-	AddStacktrace = zap.AddStacktrace
-)
-
 func NewTee(writers []io.Writer, level Level, opts ...Option) *Logger {
-	var cores []zapcore.Core
-	cfg := zap.NewProductionConfig()
-	cfg.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-		enc.AppendString(t.Format("2006-01-02T15:04:05.000Z0700"))
-	}
-
 	logger := &Logger{}
 	lv := zap.NewAtomicLevelAt(level)
 	logger.lv = &lv
+	for _, opt := range opts {
+		opt.apply(logger)
+	}
 
+	cfg := zap.NewProductionConfig()
+	if logger.development {
+		cfg = zap.NewDevelopmentConfig()
+	}
+	cfg.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString(t.Format("2006-01-02T15:04:05.000Z0700"))
+	}
+	var enc zapcore.Encoder
+	if logger.development {
+		enc = zapcore.NewConsoleEncoder(cfg.EncoderConfig)
+	} else {
+		enc = zapcore.NewJSONEncoder(cfg.EncoderConfig)
+	}
+
+	var cores []zapcore.Core
 	for _, w := range writers {
 		core := zapcore.NewCore(
-			zapcore.NewJSONEncoder(cfg.EncoderConfig),
+			enc,
 			zapcore.AddSync(w),
 			lv,
 		)
 		cores = append(cores, core)
 	}
 
-	logger.l = zap.New(zapcore.NewTee(cores...), opts...)
+	options := []zap.Option{zap.WithCaller(logger.addCaller)}
+	if logger.development {
+		options = append(options, zap.Development())
+	}
+
+	logger.l = zap.New(
+		zapcore.NewTee(cores...),
+		options...,
+	)
 
 	return logger
 }
@@ -214,20 +229,40 @@ func New(writer io.Writer, level Level, opts ...Option) *Logger {
 	if writer == nil {
 		panic("the writer is nil")
 	}
-	cfg := zap.NewProductionConfig()
-	cfg.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-		enc.AppendString(t.Format("2006-01-02T15:04:05.000Z0700"))
-	}
 
 	logger := &Logger{}
 	lv := zap.NewAtomicLevelAt(level)
 	logger.lv = &lv
+	for _, opt := range opts {
+		opt.apply(logger)
+	}
+
+	cfg := zap.NewProductionConfig()
+	if logger.development {
+		cfg = zap.NewDevelopmentConfig()
+	}
+	cfg.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString(t.Format("2006-01-02T15:04:05.000Z0700"))
+	}
+	var enc zapcore.Encoder
+	if logger.development {
+		enc = zapcore.NewConsoleEncoder(cfg.EncoderConfig)
+	} else {
+		enc = zapcore.NewJSONEncoder(cfg.EncoderConfig)
+	}
+
 	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(cfg.EncoderConfig),
+		enc,
 		zapcore.AddSync(writer),
 		lv,
 	)
-	logger.l = zap.New(core, opts...)
+
+	options := []zap.Option{zap.WithCaller(logger.addCaller)}
+	if logger.development {
+		options = append(options, zap.Development())
+	}
+
+	logger.l = zap.New(core, options...)
 
 	return logger
 }
