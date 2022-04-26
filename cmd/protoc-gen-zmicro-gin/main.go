@@ -19,7 +19,7 @@ var useCustomResponse = flag.Bool("use_custom_response", false, "use custom resp
 func main() {
 	flag.Parse()
 	if *showVersion {
-		fmt.Printf("protoc-gen-go-gin %v\n", version)
+		fmt.Printf("protoc-gen-zmicro-gin %v\n", version)
 		return
 	}
 

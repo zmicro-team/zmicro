@@ -17,7 +17,7 @@ var errorsPackage = flag.String("epk", "github.com/iobrother/zmicro/core/errors"
 func main() {
 	flag.Parse()
 	if *showVersion {
-		fmt.Printf("protoc-gen-go-errno %v\n", version)
+		fmt.Printf("protoc-gen-zmicro-errno %v\n", version)
 		return
 	}
 
@@ -25,7 +25,7 @@ func main() {
 		ParamFunc: flag.CommandLine.Set,
 	}.Run(func(gen *protogen.Plugin) error {
 		if *errorsPackage == "" {
-			log.Fatal("errors package import path must be give with '--go-errno_out=epk=xxx'")
+			log.Fatal("errors package import path must be give with '--zmicro-errno_out=epk=xxx'")
 		}
 		gen.SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
 		for _, f := range gen.Files {
