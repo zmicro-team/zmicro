@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-zmicro-gin v0.1.0
 // - protoc                v3.19.0
-// source: hello.proto
+// source: api/hello.proto
 
 package proto
 

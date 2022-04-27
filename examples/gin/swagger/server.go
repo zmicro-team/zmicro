@@ -8,10 +8,11 @@ import (
 	"github.com/iobrother/zmicro"
 	"github.com/iobrother/zmicro/core/log"
 	zgin "github.com/iobrother/zmicro/core/transport/http"
-	"github.com/iobrother/zmicro/examples/gin/api/api"
+	"github.com/iobrother/zmicro/examples/gin/swagger/api"
 )
 
 // curl http://127.0.0.1:5188/hello/zmicro
+// http://127.0.0.1:5188/swagger/index.html
 func main() {
 	app := zmicro.New(zmicro.WithInitHttpServer(InitHttpServer))
 
@@ -21,6 +22,7 @@ func main() {
 }
 
 func InitHttpServer(r *gin.Engine) error {
+	Swagger(r)
 	gin.DisableBindValidation()
 
 	g := r.Group("/")
