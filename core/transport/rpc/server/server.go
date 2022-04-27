@@ -51,7 +51,7 @@ func (s *Server) Init(opts ...Option) error {
 
 func (s *Server) Start(l net.Listener) error {
 	addr := l.Addr().String()
-	log.Infof("Server [RPCX] listening On %s", addr)
+	log.Infof("Server [RPCX] listening on %s", addr)
 	s.register(addr)
 
 	if s.opts.InitRpcServer != nil {
