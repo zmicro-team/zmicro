@@ -6,6 +6,13 @@ import (
 	"fmt"
 )
 
+const (
+	// GoGoProtoPackageIsVersion3 this constant should not be referenced by any other code.
+	ErrorsProtoPackageIsVersion3 = true
+)
+
+//go:generate protoc --go_out=:. --go_opt=paths=source_relative errors.proto
+
 func New(code int, message, detail string) *Error {
 	return &Error{
 		Code:    int32(code),
