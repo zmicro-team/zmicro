@@ -1,6 +1,5 @@
 app:
   name: "example"
   addr: ":5188"
-  enableHttp: true
 http:
   model: "debug"

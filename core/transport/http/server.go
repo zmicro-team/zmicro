@@ -8,53 +8,42 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/iobrother/zmicro/core/config"
 	"github.com/iobrother/zmicro/core/log"
 )
 
 type Server struct {
 	opts Options
-	conf *httpConfig
 	*gin.Engine
 	server *http.Server
 }
 
-type httpConfig struct {
-	Name string
-	Mode string
-}
-
 func NewServer(opts ...Option) *Server {
 	options := newOptions(opts...)
-	conf := httpConfig{}
-	if err := config.Scan("rpc", &conf); err != nil {
-		log.Fatal(err.Error())
-	}
 
 	srv := &Server{
 		opts: options,
-		conf: &conf,
 	}
 
-	gin.SetMode(conf.Mode)
+	gin.SetMode(srv.opts.Mode)
 	r := gin.New()
 	srv.Engine = r
 	srv.server = &http.Server{Handler: srv.Engine}
 	return srv
 }
 
-func (s *Server) Init(opts ...Option) error {
+func (s *Server) Init(opts ...Option) {
 	for _, opt := range opts {
 		opt(&s.opts)
 	}
-	return nil
 }
 
 func (s *Server) Start(l net.Listener) error {
-	addr := l.Addr().String()
-	log.Infof("Server [GIN] listening on %s", addr)
+	a := l.Addr().String()
+	log.Infof("Server [GIN] listening on %s", a)
 	if s.opts.InitHttpServer != nil {
-		s.opts.InitHttpServer(s.Engine)
+		if err := s.opts.InitHttpServer(s.Engine); err != nil {
+			return err
+		}
 	}
 
 	go func() {
@@ -70,6 +59,5 @@ func (s *Server) Start(l net.Listener) error {
 func (s *Server) Stop() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second))
 	defer cancel()
-	_ = s.server.Shutdown(ctx)
-	return nil
+	return s.server.Shutdown(ctx)
 }

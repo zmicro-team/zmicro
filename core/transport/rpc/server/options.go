@@ -5,7 +5,10 @@ import (
 )
 
 type Options struct {
-	InitRpcServer InitRpcServerFunc
+	InitRpcServer  InitRpcServerFunc
+	BasePath       string
+	UpdateInterval int
+	EtcdAddr       []string
 }
 
 type Option func(*Options)
@@ -22,8 +25,26 @@ func newOptions(opts ...Option) Options {
 
 type InitRpcServerFunc func(s *server.Server) error
 
-func WithInitRpcServer(f InitRpcServerFunc) Option {
+func InitRpcServer(f InitRpcServerFunc) Option {
 	return func(o *Options) {
 		o.InitRpcServer = f
+	}
+}
+
+func BasePath(s string) Option {
+	return func(o *Options) {
+		o.BasePath = s
+	}
+}
+
+func UpdateInterval(i int) Option {
+	return func(o *Options) {
+		o.UpdateInterval = i
+	}
+}
+
+func EtcdAddr(a []string) Option {
+	return func(o *Options) {
+		o.EtcdAddr = a
 	}
 }

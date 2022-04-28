@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/iobrother/zmicro/core/config"
 	"github.com/iobrother/zmicro/core/log"
 	"github.com/iobrother/zmicro/core/util/addr"
 	znet "github.com/iobrother/zmicro/core/util/net"
@@ -15,47 +14,34 @@ import (
 )
 
 type Server struct {
-	registry *serverplugin.EtcdV3RegisterPlugin
-	server   *server.Server
-	conf     *rpcConfig
-	opts     Options
-}
-
-type rpcConfig struct {
-	BasePath       string
-	UpdateInterval int
-	EtcdAddr       []string
+	server *server.Server
+	opts   Options
 }
 
 func NewServer(opts ...Option) *Server {
 	options := newOptions(opts...)
-
-	conf := rpcConfig{}
-	if err := config.Scan("rpc", &conf); err != nil {
-		log.Fatal(err.Error())
-	}
 	srv := &Server{
 		opts: options,
-		conf: &conf,
 	}
 	srv.server = server.NewServer()
 	return srv
 }
 
-func (s *Server) Init(opts ...Option) error {
+func (s *Server) Init(opts ...Option) {
 	for _, opt := range opts {
 		opt(&s.opts)
 	}
-	return nil
 }
 
 func (s *Server) Start(l net.Listener) error {
-	addr := l.Addr().String()
-	log.Infof("Server [RPCX] listening on %s", addr)
-	s.register(addr)
+	a := l.Addr().String()
+	log.Infof("Server [RPCX] listening on %s", a)
+	s.register(a)
 
 	if s.opts.InitRpcServer != nil {
-		s.opts.InitRpcServer(s.server)
+		if err := s.opts.InitRpcServer(s.server); err != nil {
+			return err
+		}
 	}
 
 	go func() {
@@ -68,41 +54,40 @@ func (s *Server) Start(l net.Listener) error {
 
 func (s *Server) Stop() error {
 	log.Info("Server [RPCX] stopping")
-	_ = s.server.Shutdown(context.Background())
-	return nil
+	return s.server.Shutdown(context.Background())
 }
 
-func (s *Server) register(address string) {
-	if len(s.conf.EtcdAddr) == 0 {
+func (s *Server) register(a string) {
+	if len(s.opts.EtcdAddr) == 0 {
 		return
 	}
 
 	var err error
 	var host, port string
-	if cnt := strings.Count(address, ":"); cnt >= 1 {
-		host, port, err = net.SplitHostPort(address)
+	if cnt := strings.Count(a, ":"); cnt >= 1 {
+		host, port, err = net.SplitHostPort(a)
 		if err != nil {
 			log.Fatal(err.Error())
 			return
 		}
 	} else {
-		host = address
+		host = a
 	}
 
-	a, err := addr.Extract(host)
+	address, err := addr.Extract(host)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	if port != "" {
-		a = znet.HostPort(a, port)
+		address = znet.HostPort(address, port)
 	}
 
 	r := &serverplugin.EtcdV3RegisterPlugin{
-		ServiceAddress: "tcp@" + a,
-		EtcdServers:    s.conf.EtcdAddr,
-		BasePath:       s.conf.BasePath,
-		UpdateInterval: time.Duration(s.conf.UpdateInterval) * time.Second,
+		ServiceAddress: "tcp@" + address,
+		EtcdServers:    s.opts.EtcdAddr,
+		BasePath:       s.opts.BasePath,
+		UpdateInterval: time.Duration(s.opts.UpdateInterval) * time.Second,
 	}
 	err = r.Start()
 	if err != nil {
@@ -110,6 +95,5 @@ func (s *Server) register(address string) {
 	}
 	s.server.Plugins.Add(r)
 
-	s.registry = r
-	log.Infof("Registering server: %s", a)
+	log.Infof("Registering server: %s", address)
 }

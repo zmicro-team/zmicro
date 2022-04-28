@@ -22,13 +22,13 @@ func newOptions(opts ...Option) Options {
 	return options
 }
 
-func WithInitRpcServer(f server.InitRpcServerFunc) Option {
+func InitRpcServer(f server.InitRpcServerFunc) Option {
 	return func(o *Options) {
 		o.InitRpcServer = f
 	}
 }
 
-func WithInitHttpServer(f http.InitHttpServerFunc) Option {
+func InitHttpServer(f http.InitHttpServerFunc) Option {
 	return func(o *Options) {
 		o.InitHttpServer = f
 	}

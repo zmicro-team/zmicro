@@ -1,7 +1,6 @@
 app:
   name: "example"
   addr: ":5188"
-  enableRpc: true
 rpc:
   basePath: /zmicro
   updateInterval: 30

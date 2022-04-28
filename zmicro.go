@@ -21,16 +21,24 @@ func init() {
 
 type App struct {
 	opts       Options
-	conf       *appConfig
+	zc         *zconfig
 	rpcServer  *server.Server
 	httpServer *http.Server
 }
 
-type appConfig struct {
-	Name       string
-	Addr       string
-	EnableRpc  bool
-	EnableHttp bool
+type zconfig struct {
+	App struct {
+		Name string
+		Addr string
+	}
+	Http struct {
+		Mode string
+	}
+	Rpc struct {
+		BasePath       string
+		UpdateInterval int
+		EtcdAddr       []string
+	}
 }
 
 func New(opts ...Option) *App {
@@ -44,22 +52,33 @@ func New(opts ...Option) *App {
 	c := config.New(config.Path(cfgFile))
 	config.ResetDefault(c)
 
-	conf := appConfig{}
-	if err = config.Scan("app", &conf); err != nil {
+	zc := &zconfig{}
+	if err = config.Scan("app", &zc.App); err != nil {
 		log.Fatal(err.Error())
 	}
-	app := &App{
-		opts: options,
-		conf: &conf,
+	if err = config.Scan("http", &zc.Http); err != nil {
+		log.Fatal(err.Error())
+	}
+	if err = config.Scan("rpc", &zc.Rpc); err != nil {
+		log.Fatal(err.Error())
 	}
 
-	if conf.EnableRpc {
-		app.rpcServer = server.NewServer()
-		app.rpcServer.Init(server.WithInitRpcServer(app.opts.InitRpcServer))
+	app := &App{
+		opts: options,
+		zc:   zc,
 	}
-	if conf.EnableHttp {
-		app.httpServer = http.NewServer()
-		app.httpServer.Init(http.WithInitHttpServer(app.opts.InitHttpServer))
+
+	if app.opts.InitRpcServer != nil {
+		app.rpcServer = server.NewServer(
+			server.BasePath(zc.Rpc.BasePath),
+			server.UpdateInterval(zc.Rpc.UpdateInterval),
+			server.EtcdAddr(zc.Rpc.EtcdAddr),
+		)
+		app.rpcServer.Init(server.InitRpcServer(app.opts.InitRpcServer))
+	}
+	if app.opts.InitHttpServer != nil {
+		app.httpServer = http.NewServer(http.Mode(zc.Http.Mode))
+		app.httpServer.Init(http.InitHttpServer(app.opts.InitHttpServer))
 	}
 
 	return app
@@ -67,7 +86,7 @@ func New(opts ...Option) *App {
 
 func (a *App) Run() error {
 
-	l, err := net.Listen("tcp", a.conf.Addr)
+	l, err := net.Listen("tcp", a.zc.App.Addr)
 	if err != nil {
 		return err
 	}
@@ -89,11 +108,11 @@ func (a *App) Run() error {
 	log.Infof("received signal %s", <-ch)
 
 	if a.rpcServer != nil {
-		a.rpcServer.Stop()
+		_ = a.rpcServer.Stop()
 	}
 
 	if a.httpServer != nil {
-		a.httpServer.Stop()
+		_ = a.httpServer.Stop()
 	}
 
 	return nil

@@ -14,7 +14,7 @@ import (
 // curl http://127.0.0.1:5188/hello/zmicro
 // http://127.0.0.1:5188/swagger/index.html
 func main() {
-	app := zmicro.New(zmicro.WithInitHttpServer(InitHttpServer))
+	app := zmicro.New(zmicro.InitHttpServer(InitHttpServer))
 
 	if err := app.Run(); err != nil {
 		log.Fatal(err.Error())
