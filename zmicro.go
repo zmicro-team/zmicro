@@ -11,6 +11,12 @@ import (
 	"github.com/iobrother/zmicro/core/log"
 	"github.com/iobrother/zmicro/core/transport/http"
 	"github.com/iobrother/zmicro/core/transport/rpc/server"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
 )
 
 var cfgFile string
@@ -28,8 +34,9 @@ type App struct {
 
 type zconfig struct {
 	App struct {
-		Name string
-		Addr string
+		Name           string
+		Addr           string
+		JaegerEndpoint string
 	}
 	Http struct {
 		Mode string
@@ -68,20 +75,57 @@ func New(opts ...Option) *App {
 		zc:   zc,
 	}
 
+	tracing := false
+	if zc.App.JaegerEndpoint != "" {
+		setTracerProvider(zc.App.JaegerEndpoint, zc.App.Name)
+		tracing = true
+	}
+
 	if app.opts.InitRpcServer != nil {
 		app.rpcServer = server.NewServer(
+			server.Name(zc.App.Name),
 			server.BasePath(zc.Rpc.BasePath),
 			server.UpdateInterval(zc.Rpc.UpdateInterval),
 			server.EtcdAddr(zc.Rpc.EtcdAddr),
+			server.Tracing(tracing),
 		)
 		app.rpcServer.Init(server.InitRpcServer(app.opts.InitRpcServer))
 	}
 	if app.opts.InitHttpServer != nil {
-		app.httpServer = http.NewServer(http.Mode(zc.Http.Mode))
+		app.httpServer = http.NewServer(
+			http.Name(zc.App.Name),
+			http.Mode(zc.Http.Mode),
+			http.Tracing(tracing),
+		)
 		app.httpServer.Init(http.InitHttpServer(app.opts.InitHttpServer))
 	}
 
 	return app
+}
+
+func setTracerProvider(endpoint string, name string) *trace.TracerProvider {
+	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(endpoint)))
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	tp := trace.NewTracerProvider(
+		trace.WithSampler(trace.AlwaysSample()),
+		trace.WithBatcher(exp),
+		trace.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String(name),
+		)),
+	)
+
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(
+		propagation.NewCompositeTextMapPropagator(
+			propagation.TraceContext{},
+			propagation.Baggage{},
+		),
+	)
+
+	return tp
 }
 
 func (a *App) Run() error {

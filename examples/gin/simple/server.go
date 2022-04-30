@@ -19,7 +19,6 @@ func main() {
 
 func InitHttpServer(r *gin.Engine) error {
 	r.GET("/hello/:name", func(c *gin.Context) {
-		c.Query("name")
 		c.Writer.WriteString(fmt.Sprintf("hello %s!", c.Param("name")))
 	})
 

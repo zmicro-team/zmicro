@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"go.opentelemetry.io/otel"
 	"net"
 	"strings"
 	"time"
@@ -9,8 +10,9 @@ import (
 	"github.com/iobrother/zmicro/core/log"
 	"github.com/iobrother/zmicro/core/util/addr"
 	znet "github.com/iobrother/zmicro/core/util/net"
-	"github.com/rpcxio/rpcx-etcd/serverplugin"
+	etcdServerPlugin "github.com/rpcxio/rpcx-etcd/serverplugin"
 	"github.com/smallnest/rpcx/server"
+	"github.com/smallnest/rpcx/serverplugin"
 )
 
 type Server struct {
@@ -35,7 +37,11 @@ func (s *Server) Init(opts ...Option) {
 
 func (s *Server) Start(l net.Listener) error {
 	a := l.Addr().String()
-	log.Infof("Server [RPCX] listening on %s", a)
+	if s.opts.Tracing {
+		tracer := otel.Tracer("rpcx")
+		p := serverplugin.NewOpenTelemetryPlugin(tracer, nil)
+		s.server.Plugins.Add(p)
+	}
 	s.register(a)
 
 	if s.opts.InitRpcServer != nil {
@@ -44,6 +50,7 @@ func (s *Server) Start(l net.Listener) error {
 		}
 	}
 
+	log.Infof("Server [RPCX] listening on %s", a)
 	go func() {
 		if err := s.server.ServeListener("tcp", l); err != nil {
 			log.Fatal(err.Error())
@@ -83,7 +90,7 @@ func (s *Server) register(a string) {
 		address = znet.HostPort(address, port)
 	}
 
-	r := &serverplugin.EtcdV3RegisterPlugin{
+	r := &etcdServerPlugin.EtcdV3RegisterPlugin{
 		ServiceAddress: "tcp@" + address,
 		EtcdServers:    s.opts.EtcdAddr,
 		BasePath:       s.opts.BasePath,

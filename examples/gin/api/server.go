@@ -11,7 +11,7 @@ import (
 	"github.com/iobrother/zmicro/examples/gin/api/api"
 )
 
-// curl http://127.0.0.1:5188/hello/zmicro
+// curl http://127.0.0.1:5180/hello/zmicro
 func main() {
 	app := zmicro.New(zmicro.InitHttpServer(InitHttpServer))
 

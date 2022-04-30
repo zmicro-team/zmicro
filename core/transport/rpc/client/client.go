@@ -3,6 +3,7 @@ package client
 type Options struct {
 	ServiceName string
 	ServiceAddr string
+	Tracing     bool
 }
 
 type Option func(*Options)
@@ -26,5 +27,11 @@ func WithServiceName(n string) Option {
 func WithServiceAddr(addr string) Option {
 	return func(opts *Options) {
 		opts.ServiceAddr = addr
+	}
+}
+
+func Tracing(b bool) Option {
+	return func(o *Options) {
+		o.Tracing = b
 	}
 }

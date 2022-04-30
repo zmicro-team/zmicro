@@ -6,6 +6,7 @@ import (
 	etcd_client "github.com/rpcxio/rpcx-etcd/client"
 	"github.com/smallnest/rpcx/client"
 	"github.com/smallnest/rpcx/protocol"
+	"go.opentelemetry.io/otel"
 )
 
 type Client struct {
@@ -55,6 +56,14 @@ func NewClient(opts ...Option) *Client {
 		opt := client.DefaultOption
 		opt.SerializeType = protocol.ProtoBuffer
 		c.xClient = client.NewXClient(c.opts.ServiceName, client.Failtry, client.RoundRobin, d, opt)
+	}
+
+	if c.opts.Tracing {
+		tracer := otel.Tracer("rpcx")
+		p := client.NewOpenTelemetryPlugin(tracer, nil)
+		pc := client.NewPluginContainer()
+		pc.Add(p)
+		c.xClient.SetPlugins(pc)
 	}
 
 	return c

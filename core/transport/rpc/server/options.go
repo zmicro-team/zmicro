@@ -5,10 +5,12 @@ import (
 )
 
 type Options struct {
+	Name           string
 	InitRpcServer  InitRpcServerFunc
 	BasePath       string
 	UpdateInterval int
 	EtcdAddr       []string
+	Tracing        bool
 }
 
 type Option func(*Options)
@@ -21,6 +23,12 @@ func newOptions(opts ...Option) Options {
 	}
 
 	return options
+}
+
+func Name(s string) Option {
+	return func(o *Options) {
+		o.Name = s
+	}
 }
 
 type InitRpcServerFunc func(s *server.Server) error
@@ -46,5 +54,11 @@ func UpdateInterval(i int) Option {
 func EtcdAddr(a []string) Option {
 	return func(o *Options) {
 		o.EtcdAddr = a
+	}
+}
+
+func Tracing(b bool) Option {
+	return func(o *Options) {
+		o.Tracing = b
 	}
 }

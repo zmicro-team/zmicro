@@ -1,5 +1,5 @@
 app:
   name: "example"
-  addr: ":5188"
+  addr: ":5180"
 http:
   model: "debug"

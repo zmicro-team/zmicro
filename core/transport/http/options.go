@@ -3,8 +3,10 @@ package http
 import "github.com/gin-gonic/gin"
 
 type Options struct {
+	Name           string
 	InitHttpServer InitHttpServerFunc
 	Mode           string
+	Tracing        bool
 }
 
 type Option func(*Options)
@@ -19,6 +21,12 @@ func newOptions(opts ...Option) Options {
 	return options
 }
 
+func Name(s string) Option {
+	return func(o *Options) {
+		o.Name = s
+	}
+}
+
 type InitHttpServerFunc func(r *gin.Engine) error
 
 func InitHttpServer(f InitHttpServerFunc) Option {
@@ -30,5 +38,11 @@ func InitHttpServer(f InitHttpServerFunc) Option {
 func Mode(s string) Option {
 	return func(o *Options) {
 		o.Mode = s
+	}
+}
+
+func Tracing(b bool) Option {
+	return func(o *Options) {
+		o.Tracing = b
 	}
 }

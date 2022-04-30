@@ -1,0 +1,9 @@
+app:
+  name: "trace-srv"
+  addr: ":5188"
+  jaegerEndpoint: "http://172.16.13.181:14268/api/traces"
+rpc:
+  basePath: /zmicro
+  updateInterval: 30
+#  etcdAddr:
+#    - 127.0.0.1:2379

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/iobrother/zmicro/core/log"
+	"github.com/iobrother/zmicro/core/transport/http/middleware/tracing"
 )
 
 type Server struct {
@@ -38,14 +39,18 @@ func (s *Server) Init(opts ...Option) {
 }
 
 func (s *Server) Start(l net.Listener) error {
-	a := l.Addr().String()
-	log.Infof("Server [GIN] listening on %s", a)
+	if s.opts.Tracing {
+		s.Engine.Use(tracing.Trace(s.opts.Name))
+	}
+
 	if s.opts.InitHttpServer != nil {
 		if err := s.opts.InitHttpServer(s.Engine); err != nil {
 			return err
 		}
 	}
 
+	a := l.Addr().String()
+	log.Infof("Server [GIN] listening on %s", a)
 	go func() {
 		if err := s.server.Serve(l); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
