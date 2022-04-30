@@ -19,7 +19,6 @@ func main() {
 
 func InitHttpServer(r *gin.Engine) error {
 	r.GET("/hello/:name", func(c *gin.Context) {
-		// TODO:
 		cc := client.NewClient(
 			client.WithServiceName("Greeter"),
 			client.WithServiceAddr("127.0.0.1:5188"),

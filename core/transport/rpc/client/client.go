@@ -1,37 +1,65 @@
 package client
 
-type Options struct {
-	ServiceName string
-	ServiceAddr string
-	Tracing     bool
+import (
+	"github.com/iobrother/zmicro/core/log"
+	etcd_client "github.com/rpcxio/rpcx-etcd/client"
+	"github.com/smallnest/rpcx/client"
+	"github.com/smallnest/rpcx/protocol"
+	"go.opentelemetry.io/otel"
+)
+
+type Client struct {
+	opts    Options
+	xClient client.XClient
 }
 
-type Option func(*Options)
+func NewClient(opts ...Option) *Client {
+	options := newOptions(opts...)
 
-func newOptions(opts ...Option) Options {
-	options := Options{}
+	c := &Client{opts: options}
 
-	for _, o := range opts {
-		o(&options)
+	if len(c.opts.EtcdAddr) > 0 {
+		d, err := etcd_client.NewEtcdV3Discovery(
+			c.opts.BasePath,
+			c.opts.ServiceName,
+			c.opts.EtcdAddr,
+			false,
+			nil,
+		)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		opt := client.DefaultOption
+		opt.SerializeType = protocol.ProtoBuffer
+		c.xClient = client.NewXClient(
+			c.opts.ServiceName,
+			client.Failtry,
+			client.RoundRobin,
+			d,
+			opt,
+		)
+	} else {
+		d, err := client.NewPeer2PeerDiscovery("tcp@"+c.opts.ServiceAddr, "")
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		opt := client.DefaultOption
+		opt.SerializeType = protocol.ProtoBuffer
+		c.xClient = client.NewXClient(c.opts.ServiceName, client.Failtry, client.RoundRobin, d, opt)
 	}
 
-	return options
+	if c.opts.Tracing {
+		tracer := otel.Tracer("rpcx")
+		p := client.NewOpenTelemetryPlugin(tracer, nil)
+		pc := client.NewPluginContainer()
+		pc.Add(p)
+		c.xClient.SetPlugins(pc)
+	}
+
+	return c
 }
 
-func WithServiceName(n string) Option {
-	return func(opts *Options) {
-		opts.ServiceName = n
-	}
-}
-
-func WithServiceAddr(addr string) Option {
-	return func(opts *Options) {
-		opts.ServiceAddr = addr
-	}
-}
-
-func Tracing(b bool) Option {
-	return func(o *Options) {
-		o.Tracing = b
-	}
+func (c *Client) GetXClient() client.XClient {
+	return c.xClient
 }

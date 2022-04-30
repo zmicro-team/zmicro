@@ -5,12 +5,15 @@ import (
 )
 
 type Options struct {
-	Name           string
-	InitRpcServer  InitRpcServerFunc
+	Name          string
+	InitRpcServer InitRpcServerFunc
+
+	// registry
 	BasePath       string
 	UpdateInterval int
 	EtcdAddr       []string
-	Tracing        bool
+
+	Tracing bool
 }
 
 type Option func(*Options)

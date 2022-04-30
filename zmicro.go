@@ -34,17 +34,16 @@ type App struct {
 
 type zconfig struct {
 	App struct {
-		Name           string
-		Addr           string
-		JaegerEndpoint string
+		Name string
+		Addr string
 	}
-	Http struct {
-		Mode string
+	Tracer struct {
+		Addr string
 	}
-	Rpc struct {
+	Registry struct {
 		BasePath       string
-		UpdateInterval int
 		EtcdAddr       []string
+		UpdateInterval int
 	}
 }
 
@@ -63,10 +62,10 @@ func New(opts ...Option) *App {
 	if err = config.Scan("app", &zc.App); err != nil {
 		log.Fatal(err.Error())
 	}
-	if err = config.Scan("http", &zc.Http); err != nil {
+	if err = config.Scan("tracer", &zc.Tracer); err != nil {
 		log.Fatal(err.Error())
 	}
-	if err = config.Scan("rpc", &zc.Rpc); err != nil {
+	if err = config.Scan("registry", &zc.Registry); err != nil {
 		log.Fatal(err.Error())
 	}
 
@@ -76,17 +75,17 @@ func New(opts ...Option) *App {
 	}
 
 	tracing := false
-	if zc.App.JaegerEndpoint != "" {
-		setTracerProvider(zc.App.JaegerEndpoint, zc.App.Name)
+	if zc.Tracer.Addr != "" {
+		setTracerProvider(zc.Tracer.Addr, zc.App.Name)
 		tracing = true
 	}
 
 	if app.opts.InitRpcServer != nil {
 		app.rpcServer = server.NewServer(
 			server.Name(zc.App.Name),
-			server.BasePath(zc.Rpc.BasePath),
-			server.UpdateInterval(zc.Rpc.UpdateInterval),
-			server.EtcdAddr(zc.Rpc.EtcdAddr),
+			server.BasePath(zc.Registry.BasePath),
+			server.UpdateInterval(zc.Registry.UpdateInterval),
+			server.EtcdAddr(zc.Registry.EtcdAddr),
 			server.Tracing(tracing),
 		)
 		app.rpcServer.Init(server.InitRpcServer(app.opts.InitRpcServer))
@@ -94,7 +93,7 @@ func New(opts ...Option) *App {
 	if app.opts.InitHttpServer != nil {
 		app.httpServer = http.NewServer(
 			http.Name(zc.App.Name),
-			http.Mode(zc.Http.Mode),
+			//http.Mode(zc.Http.Mode),
 			http.Tracing(tracing),
 		)
 		app.httpServer.Init(http.InitHttpServer(app.opts.InitHttpServer))

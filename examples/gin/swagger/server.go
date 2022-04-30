@@ -11,8 +11,8 @@ import (
 	"github.com/iobrother/zmicro/examples/gin/swagger/api"
 )
 
-// curl http://127.0.0.1:5188/hello/zmicro
-// http://127.0.0.1:5188/swagger/index.html
+// curl http://127.0.0.1:5180/hello/zmicro
+// http://127.0.0.1:5180/swagger/index.html
 func main() {
 	app := zmicro.New(zmicro.InitHttpServer(InitHttpServer))
 

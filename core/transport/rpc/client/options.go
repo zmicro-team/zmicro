@@ -1,74 +1,54 @@
 package client
 
-import (
-	"github.com/iobrother/zmicro/core/config"
-	"github.com/iobrother/zmicro/core/log"
-	etcd_client "github.com/rpcxio/rpcx-etcd/client"
-	"github.com/smallnest/rpcx/client"
-	"github.com/smallnest/rpcx/protocol"
-	"go.opentelemetry.io/otel"
-)
+type Options struct {
+	ServiceName string
+	ServiceAddr string
 
-type Client struct {
-	opts    Options
-	conf    *clientConfig
-	xClient client.XClient
-}
-
-type clientConfig struct {
+	// registry
 	BasePath string
 	EtcdAddr []string
+
+	Tracing bool
 }
 
-func NewClient(opts ...Option) *Client {
-	options := newOptions(opts...)
+type Option func(*Options)
 
-	conf := clientConfig{}
-	config.Scan("rpc", &conf)
-	c := &Client{opts: options, conf: &conf}
+func newOptions(opts ...Option) Options {
+	options := Options{}
 
-	if len(c.conf.EtcdAddr) > 0 {
-		d, err := etcd_client.NewEtcdV3Discovery(
-			c.conf.BasePath,
-			c.opts.ServiceName,
-			c.conf.EtcdAddr,
-			false,
-			nil,
-		)
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-		opt := client.DefaultOption
-		opt.SerializeType = protocol.ProtoBuffer
-		c.xClient = client.NewXClient(
-			c.opts.ServiceName,
-			client.Failtry,
-			client.RoundRobin,
-			d,
-			opt,
-		)
-	} else {
-		d, err := client.NewPeer2PeerDiscovery("tcp@"+c.opts.ServiceAddr, "")
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-
-		opt := client.DefaultOption
-		opt.SerializeType = protocol.ProtoBuffer
-		c.xClient = client.NewXClient(c.opts.ServiceName, client.Failtry, client.RoundRobin, d, opt)
+	for _, o := range opts {
+		o(&options)
 	}
 
-	if c.opts.Tracing {
-		tracer := otel.Tracer("rpcx")
-		p := client.NewOpenTelemetryPlugin(tracer, nil)
-		pc := client.NewPluginContainer()
-		pc.Add(p)
-		c.xClient.SetPlugins(pc)
-	}
-
-	return c
+	return options
 }
 
-func (c *Client) GetXClient() client.XClient {
-	return c.xClient
+func WithServiceName(n string) Option {
+	return func(opts *Options) {
+		opts.ServiceName = n
+	}
+}
+
+func WithServiceAddr(addr string) Option {
+	return func(opts *Options) {
+		opts.ServiceAddr = addr
+	}
+}
+
+func BasePath(s string) Option {
+	return func(o *Options) {
+		o.BasePath = s
+	}
+}
+
+func EtcdAddr(a []string) Option {
+	return func(o *Options) {
+		o.EtcdAddr = a
+	}
+}
+
+func Tracing(b bool) Option {
+	return func(o *Options) {
+		o.Tracing = b
+	}
 }

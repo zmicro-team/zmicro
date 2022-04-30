@@ -1,6 +1,5 @@
 app:
   name: "trace-api"
   addr: ":5180"
-  jaegerEndpoint: "http://172.16.13.181:14268/api/traces"
-http:
-  model: "debug"
+tracer:
+  addr: "http://172.16.13.181:14268/api/traces"
