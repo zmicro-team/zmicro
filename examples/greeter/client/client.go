@@ -5,7 +5,7 @@ import (
 
 	"github.com/iobrother/zmicro/core/log"
 	"github.com/iobrother/zmicro/core/transport/rpc/client"
-	"github.com/iobrother/zmicro/examples/greeter/proto"
+	"github.com/iobrother/zmicro/examples/proto"
 )
 
 func main() {

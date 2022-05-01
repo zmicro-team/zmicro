@@ -26,7 +26,7 @@ func InitHttpServer(r *gin.Engine) error {
 	gin.DisableBindValidation()
 
 	g := r.Group("/")
-	proto.RegisterGreeterHTTPServer(g, &GreeterImpl{})
+	api.RegisterGreeterHTTPServer(g, &GreeterImpl{})
 
 	return nil
 }
@@ -35,10 +35,10 @@ type GreeterImpl struct {
 	zgin.Implemented
 }
 
-func (s *GreeterImpl) SayHello(ctx context.Context, req *proto.HelloRequest) (rsp *proto.HelloReply, err error) {
-	rsp = &proto.HelloReply{
+func (s *GreeterImpl) SayHello(ctx context.Context, req *api.HelloRequest, rsp *api.HelloReply) error {
+	*rsp = api.HelloReply{
 		Message: fmt.Sprintf("hello %s!", req.Name),
 	}
 
-	return rsp, nil
+	return nil
 }

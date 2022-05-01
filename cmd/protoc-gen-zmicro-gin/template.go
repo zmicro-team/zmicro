@@ -12,7 +12,7 @@ var httpTemplate = `
 {{$useCustomResp := .UseCustomResponse}}
 type {{$svrType}}HTTPServer interface {
 {{- range .MethodSets}}
-	{{.Name}}(context.Context, *{{.Request}}) (*{{.Reply}}, error)
+	{{.Name}}(context.Context, *{{.Request}}, *{{.Reply}}) error
 {{- end}}
     Validate(context.Context, any) error
 	ErrorEncoder(c *gin.Context, err error, isBadRequest bool)
@@ -24,8 +24,8 @@ type {{$svrType}}HTTPServer interface {
 type Unimplemented{{$svrType}}HTTPServer struct {}
 
 {{- range .MethodSets}}
-func (*Unimplemented{{$svrType}}HTTPServer) {{.Name}}(context.Context, *{{.Request}}) (*{{.Reply}}, error) {
-	return nil, errors.New("method {{.Name}} not implemented")
+func (*Unimplemented{{$svrType}}HTTPServer) {{.Name}}(context.Context, *{{.Request}}, *{{.Reply}},) error {
+	return errors.New("method {{.Name}} not implemented")
 }
 {{- end}}
 func (*Unimplemented{{$svrType}}HTTPServer) Validate(context.Context, any) error { return nil }
@@ -78,19 +78,20 @@ func _{{$svrType}}_{{.Name}}{{.Num}}_HTTP_Handler(srv {{$svrType}}HTTPServer) gi
 		}
 
 		var req {{.Request}}
+		var rsp {{.Reply}}
 		if err := shouldBind(&req); err != nil {
 			srv.ErrorEncoder(c, err, true)
 			return
 		}
-		result, err := srv.{{.Name}}(c.Request.Context(), &req)
+		err := srv.{{.Name}}(c.Request.Context(), &req, &rsp)
 		if err != nil {
 			srv.ErrorEncoder(c, err, false)
 			return
 		}
 		{{- if $useCustomResp}}
-		srv.ResponseEncoder(c, result)
+		srv.ResponseEncoder(c, rsp)
 		{{- else}}
-		c.JSON(200, result)		
+		c.JSON(200, rsp)		
 		{{- end}}
 	}
 }

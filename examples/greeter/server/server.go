@@ -6,7 +6,7 @@ import (
 
 	"github.com/iobrother/zmicro"
 	"github.com/iobrother/zmicro/core/log"
-	"github.com/iobrother/zmicro/examples/greeter/proto"
+	"github.com/iobrother/zmicro/examples/proto"
 	"github.com/smallnest/rpcx/server"
 )
 
@@ -27,9 +27,9 @@ func InitRpcServer(s *server.Server) error {
 
 type GreeterImpl struct{}
 
-func (s *GreeterImpl) SayHello(ctx context.Context, args *proto.HelloRequest, reply *proto.HelloReply) (err error) {
-	*reply = proto.HelloReply{
-		Message: fmt.Sprintf("hello %s!", args.Name),
+func (s *GreeterImpl) SayHello(ctx context.Context, req *proto.HelloRequest, rsp *proto.HelloReply) error {
+	*rsp = proto.HelloReply{
+		Message: fmt.Sprintf("hello %s!", req.Name),
 	}
 
 	return nil

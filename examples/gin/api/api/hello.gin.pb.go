@@ -4,7 +4,7 @@
 // - protoc                v3.19.0
 // source: api/hello.proto
 
-package proto
+package api
 
 import (
 	context "context"
@@ -18,15 +18,15 @@ var _ = context.TODO
 var _ = gin.New
 
 type GreeterHTTPServer interface {
-	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
+	SayHello(context.Context, *HelloRequest, *HelloReply) error
 	Validate(context.Context, any) error
 	ErrorEncoder(c *gin.Context, err error, isBadRequest bool)
 }
 
 type UnimplementedGreeterHTTPServer struct{}
 
-func (*UnimplementedGreeterHTTPServer) SayHello(context.Context, *HelloRequest) (*HelloReply, error) {
-	return nil, errors.New("method SayHello not implemented")
+func (*UnimplementedGreeterHTTPServer) SayHello(context.Context, *HelloRequest, *HelloReply) error {
+	return errors.New("method SayHello not implemented")
 }
 func (*UnimplementedGreeterHTTPServer) Validate(context.Context, any) error { return nil }
 func (*UnimplementedGreeterHTTPServer) ErrorEncoder(c *gin.Context, err error, isBadRequest bool) {
@@ -55,15 +55,16 @@ func _Greeter_SayHello0_HTTP_Handler(srv GreeterHTTPServer) gin.HandlerFunc {
 		}
 
 		var req HelloRequest
+		var rsp HelloReply
 		if err := shouldBind(&req); err != nil {
 			srv.ErrorEncoder(c, err, true)
 			return
 		}
-		result, err := srv.SayHello(c.Request.Context(), &req)
+		err := srv.SayHello(c.Request.Context(), &req, &rsp)
 		if err != nil {
 			srv.ErrorEncoder(c, err, false)
 			return
 		}
-		c.JSON(200, result)
+		c.JSON(200, rsp)
 	}
 }
