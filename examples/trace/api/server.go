@@ -6,6 +6,7 @@ import (
 	"github.com/iobrother/zmicro/core/log"
 	"github.com/iobrother/zmicro/core/transport/rpc/client"
 	"github.com/iobrother/zmicro/examples/proto"
+	"net/http"
 )
 
 // curl http://127.0.0.1:5180/hello/zmicro
@@ -38,7 +39,7 @@ func InitHttpServer(r *gin.Engine) error {
 			return
 		}
 
-		c.Writer.WriteString(reply.Message)
+		c.String(http.StatusOK, reply.Message)
 	})
 
 	return nil

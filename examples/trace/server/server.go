@@ -26,9 +26,9 @@ func InitRpcServer(s *server.Server) error {
 
 type GreeterImpl struct{}
 
-func (s *GreeterImpl) SayHello(ctx context.Context, args *proto.HelloRequest, reply *proto.HelloReply) (err error) {
-	*reply = proto.HelloReply{
-		Message: fmt.Sprintf("hello %s!", args.Name),
+func (s *GreeterImpl) SayHello(ctx context.Context, req *proto.HelloRequest, rsp *proto.HelloReply) (err error) {
+	*rsp = proto.HelloReply{
+		Message: fmt.Sprintf("hello %s!", req.Name),
 	}
 
 	return nil

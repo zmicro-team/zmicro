@@ -12,14 +12,14 @@ func main() {
 	c := client.NewClient(client.WithServiceName("Greeter"), client.WithServiceAddr("127.0.0.1:5188"))
 	cli := proto.NewGreeterClient(c.GetXClient())
 
-	args := &proto.HelloRequest{
+	req := &proto.HelloRequest{
 		Name: "zmicro",
 	}
 
-	reply, err := cli.SayHello(context.Background(), args)
+	rsp, err := cli.SayHello(context.Background(), req)
 	if err != nil {
 		log.Error(err.Error())
 		return
 	}
-	log.Infof("reply: %s", reply.Message)
+	log.Infof("reply: %s", rsp.Message)
 }
