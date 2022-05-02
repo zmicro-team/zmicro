@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option go_package = "github.com/iobrother/zmicro/examples/gin/api/api";
+option go_package = "github.com/iobrother/zmicro/examples/multi/server/api";
 
-package github.com.iobrother.zmicro.examples.gin.api.api;
+package github.com.iobrother.zmicro.examples.multi.server.api;
 
 import "google/api/annotations.proto";
 import "gogoproto/gogo.proto";

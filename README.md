@@ -18,7 +18,7 @@ zmicro集成了流行的web框架 [gin](https://github.com/gin-gonic/gin) 与 �
 
 ## 快速开始
 
-proto文件
+### proto文件
 
 ```protobuf
 syntax = "proto3";
@@ -44,7 +44,7 @@ message HelloReply {
 }
 ```
 
-安装代码生成插件
+### 安装代码生成插件
 
 ```bash
 go install github.com/gogo/protobuf/protoc-gen-gofast@latest
@@ -59,7 +59,19 @@ protoc -I. -I${GOPATH}/src \
   --rpcx_out=. --rpcx_opt=paths=source_relative *.proto
 ```
 
-服务端代码
+上述命令生成了 hello.pb.go 与 hello.rpcx.pb.go 两个文件。 hello.pb.go 文件是由protoc-gen-gofast插件生成的， 当然你也可以选择官方的protoc-gen-go插件来生成。 hello.rpcx.pb.go 是由protoc-gen-rpcx插件生成的，它包含服务端的一个骨架， 以及客户端的代码。
+
+### 服务端配置文件
+
+```yaml
+app:
+  name: "example"
+rpc:
+  addr: ":5188"
+
+```
+
+### 服务端代码
 
 ```go
 package main
@@ -101,15 +113,7 @@ func (s *GreeterImpl) SayHello(ctx context.Context, req *proto.HelloRequest, rsp
 
 ```
 
-服务端配置文件
-
-```yaml
-app:
-  name: "example"
-  addr: ":5188"
-```
-
-客户端代码
+### 客户端代码
 
 ```go
 package main
@@ -138,3 +142,25 @@ func main() {
 	log.Infof("reply: %s", rsp.Message)
 }
 ```
+
+## 启动服务器
+
+```bash
+go run server.go
+```
+
+## 启动客户端
+
+```bash
+go run client.go
+```
+
+输出
+
+```
+{"level":"info","ts":"2022-05-02T16:34:17.754+0800","caller":"log/log.go:59","msg":"reply: hello zmicro!"}
+```
+
+## 源码地址
+
+https://github.com/iobrother/zmicro/tree/master/examples/greeter
