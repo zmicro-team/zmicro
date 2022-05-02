@@ -38,7 +38,7 @@ func (s *Server) Init(opts ...Option) {
 	}
 }
 
-func (s *Server) Start(l net.Listener) error {
+func (s *Server) Start() error {
 	if s.opts.Tracing {
 		s.Engine.Use(tracing.Trace(s.opts.Name))
 	}
@@ -49,6 +49,10 @@ func (s *Server) Start(l net.Listener) error {
 		}
 	}
 
+	l, err := net.Listen("tcp", s.opts.Addr)
+	if err != nil {
+		return err
+	}
 	a := l.Addr().String()
 	log.Infof("Server [GIN] listening on %s", a)
 	go func() {

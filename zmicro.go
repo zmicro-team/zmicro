@@ -2,7 +2,6 @@ package zmicro
 
 import (
 	"flag"
-	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -37,6 +36,13 @@ type zconfig struct {
 		Name string
 		Addr string
 	}
+	Http struct {
+		Addr string
+		Mode string
+	}
+	Rpc struct {
+		Addr string
+	}
 	Tracer struct {
 		Addr string
 	}
@@ -62,6 +68,12 @@ func New(opts ...Option) *App {
 	if err = config.Scan("app", &zc.App); err != nil {
 		log.Fatal(err.Error())
 	}
+	if err = config.Scan("http", &zc.Http); err != nil {
+		log.Fatal(err.Error())
+	}
+	if err = config.Scan("rpc", &zc.Rpc); err != nil {
+		log.Fatal(err.Error())
+	}
 	if err = config.Scan("tracer", &zc.Tracer); err != nil {
 		log.Fatal(err.Error())
 	}
@@ -83,6 +95,7 @@ func New(opts ...Option) *App {
 	if app.opts.InitRpcServer != nil {
 		app.rpcServer = server.NewServer(
 			server.Name(zc.App.Name),
+			server.Addr(zc.Rpc.Addr),
 			server.BasePath(zc.Registry.BasePath),
 			server.UpdateInterval(zc.Registry.UpdateInterval),
 			server.EtcdAddr(zc.Registry.EtcdAddr),
@@ -93,7 +106,8 @@ func New(opts ...Option) *App {
 	if app.opts.InitHttpServer != nil {
 		app.httpServer = http.NewServer(
 			http.Name(zc.App.Name),
-			//http.Mode(zc.Http.Mode),
+			http.Addr(zc.Http.Addr),
+			http.Mode(zc.Http.Mode),
 			http.Tracing(tracing),
 		)
 		app.httpServer.Init(http.InitHttpServer(app.opts.InitHttpServer))
@@ -128,20 +142,14 @@ func setTracerProvider(endpoint string, name string) *trace.TracerProvider {
 }
 
 func (a *App) Run() error {
-
-	l, err := net.Listen("tcp", a.zc.App.Addr)
-	if err != nil {
-		return err
-	}
-
 	if a.rpcServer != nil {
-		if err = a.rpcServer.Start(l); err != nil {
+		if err := a.rpcServer.Start(); err != nil {
 			return err
 		}
 	}
 
 	if a.httpServer != nil {
-		if err = a.httpServer.Start(l); err != nil {
+		if err := a.httpServer.Start(); err != nil {
 			return err
 		}
 	}

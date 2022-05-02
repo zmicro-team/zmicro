@@ -35,7 +35,11 @@ func (s *Server) Init(opts ...Option) {
 	}
 }
 
-func (s *Server) Start(l net.Listener) error {
+func (s *Server) Start() error {
+	l, err := net.Listen("tcp", s.opts.Addr)
+	if err != nil {
+		return err
+	}
 	a := l.Addr().String()
 	if s.opts.Tracing {
 		tracer := otel.Tracer("rpcx")

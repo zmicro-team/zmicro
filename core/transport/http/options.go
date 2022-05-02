@@ -4,6 +4,7 @@ import "github.com/gin-gonic/gin"
 
 type Options struct {
 	Name           string
+	Addr           string
 	InitHttpServer InitHttpServerFunc
 	Mode           string
 	Tracing        bool
@@ -24,6 +25,12 @@ func newOptions(opts ...Option) Options {
 func Name(s string) Option {
 	return func(o *Options) {
 		o.Name = s
+	}
+}
+
+func Addr(s string) Option {
+	return func(o *Options) {
+		o.Addr = s
 	}
 }
 

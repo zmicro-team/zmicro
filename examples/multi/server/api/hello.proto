@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option go_package = "github.com/iobrother/zmicro/examples/gin/api/api";
+
+package github.com.iobrother.zmicro.examples.gin.api.api;
+
+import "google/api/annotations.proto";
+import "gogoproto/gogo.proto";
+
+service Greeter {
+  rpc SayHello(HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/hello/{name}"
+    };
+  }
+}
+
+message HelloRequest {
+  string name = 1 [(gogoproto.moretags) = 'uri:"name"'];
+}
+
+message HelloReply {
+  string message = 1;
+}

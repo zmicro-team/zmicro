@@ -6,6 +6,7 @@ import (
 
 type Options struct {
 	Name          string
+	Addr          string
 	InitRpcServer InitRpcServerFunc
 
 	// registry
@@ -31,6 +32,12 @@ func newOptions(opts ...Option) Options {
 func Name(s string) Option {
 	return func(o *Options) {
 		o.Name = s
+	}
+}
+
+func Addr(s string) Option {
+	return func(o *Options) {
+		o.Addr = s
 	}
 }
 

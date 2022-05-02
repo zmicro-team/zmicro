@@ -3,3 +3,5 @@ app:
 http:
   addr: ":5180"
   mode: "debug"
+rpc:
+  addr: ":5188"

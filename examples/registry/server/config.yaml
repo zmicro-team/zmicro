@@ -1,0 +1,7 @@
+app:
+  name: "example"
+registry:
+  basePath: "/zmicro"
+  updateInterval: 30
+  etcdAddr:
+    - "127.0.0.1:2379"
