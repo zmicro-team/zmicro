@@ -172,6 +172,7 @@ type Logger struct {
 	lv          *zap.AtomicLevel
 	development bool
 	addCaller   bool
+	callSkip    int
 }
 
 var defaultLogger = New(os.Stderr, InfoLevel, WithCaller(true))
@@ -181,7 +182,7 @@ func Default() *Logger {
 }
 
 func NewTee(writers []io.Writer, level Level, opts ...Option) *Logger {
-	logger := &Logger{}
+	logger := &Logger{callSkip: 1}
 	lv := zap.NewAtomicLevelAt(level)
 	logger.lv = &lv
 	for _, opt := range opts {
@@ -216,6 +217,7 @@ func NewTee(writers []io.Writer, level Level, opts ...Option) *Logger {
 	if logger.development {
 		options = append(options, zap.Development())
 	}
+	options = append(options, zap.AddCallerSkip(logger.callSkip))
 
 	logger.l = zap.New(
 		zapcore.NewTee(cores...),
@@ -230,7 +232,7 @@ func New(writer io.Writer, level Level, opts ...Option) *Logger {
 		panic("the writer is nil")
 	}
 
-	logger := &Logger{}
+	logger := &Logger{callSkip: 1}
 	lv := zap.NewAtomicLevelAt(level)
 	logger.lv = &lv
 	for _, opt := range opts {
@@ -261,6 +263,7 @@ func New(writer io.Writer, level Level, opts ...Option) *Logger {
 	if logger.development {
 		options = append(options, zap.Development())
 	}
+	options = append(options, zap.AddCallerSkip(logger.callSkip))
 
 	logger.l = zap.New(core, options...)
 

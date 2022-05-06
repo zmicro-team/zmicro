@@ -16,6 +16,12 @@ func WithCaller(enabled bool) Option {
 	})
 }
 
+func WithCallerSkip(skip int) Option {
+	return optionFunc(func(l *Logger) {
+		l.callSkip = skip
+	})
+}
+
 func Development() Option {
 	return optionFunc(func(l *Logger) {
 		l.development = true
