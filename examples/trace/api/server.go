@@ -1,12 +1,13 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/iobrother/zmicro"
 	"github.com/iobrother/zmicro/core/log"
 	"github.com/iobrother/zmicro/core/transport/rpc/client"
 	"github.com/iobrother/zmicro/examples/proto"
-	"net/http"
 )
 
 // curl http://127.0.0.1:5180/hello/zmicro
@@ -20,11 +21,15 @@ func main() {
 
 func InitHttpServer(r *gin.Engine) error {
 	r.GET("/hello/:name", func(c *gin.Context) {
-		cc := client.NewClient(
+		cc, err := client.NewClient(
 			client.WithServiceName("Greeter"),
 			client.WithServiceAddr("127.0.0.1:5188"),
 			client.Tracing(true),
 		)
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
 		cli := proto.NewGreeterClient(cc.GetXClient())
 
 		args := &proto.HelloRequest{
