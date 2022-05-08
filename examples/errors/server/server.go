@@ -2,10 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/iobrother/zmicro"
 	"github.com/iobrother/zmicro/core/log"
+	"github.com/iobrother/zmicro/examples/errors/errno"
 	"github.com/iobrother/zmicro/examples/proto"
 	"github.com/smallnest/rpcx/server"
 )
@@ -28,9 +27,5 @@ func InitRpcServer(s *server.Server) error {
 type GreeterImpl struct{}
 
 func (s *GreeterImpl) SayHello(ctx context.Context, req *proto.HelloRequest, rsp *proto.HelloReply) (err error) {
-	*rsp = proto.HelloReply{
-		Message: fmt.Sprintf("hello %s!", req.Name),
-	}
-
-	return nil
+	return errno.ErrBizError()
 }

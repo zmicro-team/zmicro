@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/iobrother/zmicro/examples/gin/api/api";
+option go_package = "github.com/iobrother/zmicro/examples/errors/api";
 
 package api;
 
@@ -13,6 +13,11 @@ service Greeter {
       get: "/hello/{name}"
     };
   }
+  rpc TestError(ErrorRequest) returns (ErrorReply) {
+    option (google.api.http) = {
+      get: "/error/{name}"
+    };
+  }
 }
 
 message HelloRequest {
@@ -22,3 +27,12 @@ message HelloRequest {
 message HelloReply {
   string message = 1;
 }
+
+message ErrorRequest {
+  string name = 1 [(gogoproto.moretags) = 'uri:"name"'];
+}
+
+message ErrorReply {
+  string message = 1;
+}
+

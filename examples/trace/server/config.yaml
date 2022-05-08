@@ -1,5 +1,6 @@
 app:
   name: "trace-srv"
+rpc:
   addr: ":5188"
 tracer:
   addr: "http://172.16.13.181:14268/api/traces"

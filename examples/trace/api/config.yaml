@@ -1,5 +1,6 @@
 app:
   name: "trace-api"
+http:
   addr: ":5180"
 tracer:
   addr: "http://172.16.13.181:14268/api/traces"

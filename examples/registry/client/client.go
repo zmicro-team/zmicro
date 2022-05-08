@@ -9,11 +9,15 @@ import (
 )
 
 func main() {
-	c := client.NewClient(
+	c, err := client.NewClient(
 		client.WithServiceName("Greeter"),
 		client.BasePath("/zmicro"),
 		client.EtcdAddr([]string{"127.0.0.1:2379"}),
 	)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
 	cli := proto.NewGreeterClient(c.GetXClient())
 
 	req := &proto.HelloRequest{

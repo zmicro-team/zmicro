@@ -13,7 +13,7 @@ type Client struct {
 	xClient client.XClient
 }
 
-func NewClient(opts ...Option) *Client {
+func NewClient(opts ...Option) (*Client, error) {
 	options := newOptions(opts...)
 
 	c := &Client{opts: options}
@@ -27,7 +27,8 @@ func NewClient(opts ...Option) *Client {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Errorf("NewClient error=%v", err)
+			return nil, err
 		}
 		opt := client.DefaultOption
 		opt.SerializeType = protocol.ProtoBuffer
@@ -41,7 +42,8 @@ func NewClient(opts ...Option) *Client {
 	} else {
 		d, err := client.NewPeer2PeerDiscovery("tcp@"+c.opts.ServiceAddr, "")
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Errorf("NewClient error=%v", err)
+			return nil, err
 		}
 
 		opt := client.DefaultOption
@@ -57,7 +59,7 @@ func NewClient(opts ...Option) *Client {
 		c.xClient.SetPlugins(pc)
 	}
 
-	return c
+	return c, nil
 }
 
 func (c *Client) GetXClient() client.XClient {

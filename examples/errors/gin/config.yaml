@@ -1,0 +1,4 @@
+app:
+  name: "errors-api"
+http:
+  addr: ":5180"
