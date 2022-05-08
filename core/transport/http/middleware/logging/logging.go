@@ -1,0 +1,113 @@
+package logging
+
+import (
+	"bytes"
+	"context"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/iobrother/zmicro/core/log"
+	"github.com/iobrother/zmicro/core/util/env"
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
+)
+
+var (
+	slowThreshold = time.Millisecond * 500
+)
+
+type rspWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+func (w rspWriter) Write(b []byte) (int, error) {
+	n, err := w.body.Write(b)
+	if err != nil {
+		return n, err
+	}
+
+	return w.ResponseWriter.Write(b)
+}
+
+func (w rspWriter) WriteString(s string) (int, error) {
+	n, err := w.body.WriteString(s)
+	if err != nil {
+		return n, err
+	}
+
+	return w.ResponseWriter.WriteString(s)
+}
+
+func copyHeader(header http.Header) http.Header {
+	h := http.Header{}
+	for k, v := range header {
+		h[k] = v
+	}
+
+	return h
+}
+
+func Log() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var start = time.Now()
+		var writer *rspWriter
+		var buf bytes.Buffer
+		var body string
+		c.Request.Body = ioutil.NopCloser(io.TeeReader(c.Request.Body, &buf))
+		if _, err := ioutil.ReadAll(c.Request.Body); err != nil {
+			c.Abort()
+			return
+		}
+		body = buf.String()
+		c.Request.Body = ioutil.NopCloser(&buf)
+		writer = &rspWriter{c.Writer, &bytes.Buffer{}}
+		c.Writer = writer
+
+		defer func() {
+			var fields []zap.Field
+			traceId := getTraceId(c.Request.Context())
+			if traceId != "" {
+				fields = append(fields, zap.String("trace_id", traceId))
+			}
+			fields = append(fields, zap.String("type", "http"))
+			fields = append(fields, zap.Int("status", c.Writer.Status()))
+			fields = append(fields, zap.String("method", c.Request.Method))
+			fields = append(fields, zap.String("route", c.FullPath()))
+			fields = append(fields, zap.String("target", c.Request.RequestURI))
+			fields = append(fields, zap.String("client_ip", c.ClientIP()))
+			fields = append(fields, zap.String("peer", c.Request.RemoteAddr))
+			fields = append(fields, zap.Int("size", c.Writer.Size()))
+			duration := time.Since(start)
+			fields = append(fields, zap.Duration("duration", duration))
+			fields = append(fields, zap.Any("req", map[string]interface{}{
+				"header": copyHeader(c.Request.Header),
+				"body":   body,
+			}))
+
+			if env.Get() == env.Develop {
+				fields = append(fields, zap.Any("rsp", map[string]interface{}{
+					"header": copyHeader(c.Writer.Header()),
+					"body":   writer.body.String(),
+				}))
+			}
+			// slow log
+			if duration > slowThreshold {
+				log.Warn("slow", fields...)
+			}
+			log.Info("access", fields...)
+		}()
+
+		c.Next()
+	}
+}
+
+func getTraceId(ctx context.Context) string {
+	if sc := trace.SpanContextFromContext(ctx); sc.HasTraceID() {
+		return sc.SpanID().String()
+	}
+	return ""
+}

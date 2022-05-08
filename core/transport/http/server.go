@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"errors"
+	"github.com/iobrother/zmicro/core/transport/http/middleware/logging"
 	"net"
 	"net/http"
 	"time"
@@ -42,6 +43,8 @@ func (s *Server) Start() error {
 	if s.opts.Tracing {
 		s.Engine.Use(tracing.Trace(s.opts.Name))
 	}
+
+	s.Engine.Use(logging.Log())
 
 	if s.opts.InitHttpServer != nil {
 		if err := s.opts.InitHttpServer(s.Engine); err != nil {
