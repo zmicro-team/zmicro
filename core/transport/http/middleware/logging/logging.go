@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -68,6 +69,10 @@ func Log() gin.HandlerFunc {
 		c.Writer = writer
 
 		defer func() {
+			//if c.Request.RequestURI
+			if checkPrefix(c.Request.RequestURI, "/swagger") {
+				return
+			}
 			var fields []zap.Field
 			traceId := getTraceId(c.Request.Context())
 			if traceId != "" {
@@ -110,4 +115,13 @@ func getTraceId(ctx context.Context) string {
 		return sc.SpanID().String()
 	}
 	return ""
+}
+
+func checkPrefix(s string, prefixes ...string) bool {
+	for _, p := range prefixes {
+		if strings.HasPrefix(s, p) {
+			return true
+		}
+	}
+	return false
 }

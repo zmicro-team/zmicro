@@ -2,7 +2,7 @@
 
 ## 文档
 
-https://iobrother.github.io/
+https://iobrother.com/
 
 ## 简介
 

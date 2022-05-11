@@ -40,6 +40,11 @@ func (s *Server) Init(opts ...Option) {
 }
 
 func (s *Server) Start() error {
+	s.Engine.Use(func(c *gin.Context) {
+		ctx := NewContext(c.Request.Context(), c)
+		c.Request = c.Request.WithContext(ctx)
+	})
+
 	if s.opts.Tracing {
 		s.Engine.Use(tracing.Trace(s.opts.Name))
 	}
