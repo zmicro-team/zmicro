@@ -2,6 +2,7 @@ package zmicro
 
 import (
 	"flag"
+	"github.com/iobrother/zmicro/core/util/env"
 	"os"
 	"os/signal"
 	"syscall"
@@ -33,12 +34,12 @@ type App struct {
 
 type zconfig struct {
 	App struct {
+		Mode string
 		Name string
 		Addr string
 	}
 	Http struct {
 		Addr string
-		Mode string
 	}
 	Rpc struct {
 		Addr string
@@ -81,6 +82,8 @@ func New(opts ...Option) *App {
 		log.Fatal(err.Error())
 	}
 
+	env.Set(zc.App.Mode)
+	
 	app := &App{
 		opts: options,
 		zc:   zc,
@@ -103,11 +106,15 @@ func New(opts ...Option) *App {
 		)
 		app.rpcServer.Init(server.InitRpcServer(app.opts.InitRpcServer))
 	}
+	mode := "debug"
+	if env.IsProduct() || env.IsStaging() {
+		mode = "release"
+	}
 	if app.opts.InitHttpServer != nil {
 		app.httpServer = http.NewServer(
 			http.Name(zc.App.Name),
 			http.Addr(zc.Http.Addr),
-			http.Mode(zc.Http.Mode),
+			http.Mode(mode),
 			http.Tracing(tracing),
 		)
 		app.httpServer.Init(http.InitHttpServer(app.opts.InitHttpServer))
