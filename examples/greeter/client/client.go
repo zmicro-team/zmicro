@@ -11,7 +11,7 @@ import (
 func main() {
 	c, err := client.NewClient(client.WithServiceName("Greeter"), client.WithServiceAddr("127.0.0.1:5188"))
 	if err != nil {
-		log.Error(err.Error())
+		log.Error(err)
 		return
 	}
 	cli := proto.NewGreeterClient(c.GetXClient())
@@ -22,7 +22,7 @@ func main() {
 
 	rsp, err := cli.SayHello(context.Background(), req)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error(err)
 		return
 	}
 	log.Infof("reply: %s", rsp.Message)

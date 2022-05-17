@@ -14,7 +14,7 @@ func main() {
 	app := zmicro.New(zmicro.InitRpcServer(InitRpcServer))
 
 	if err := app.Run(); err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(err)
 	}
 }
 
@@ -31,7 +31,5 @@ func (s *GreeterImpl) SayHello(ctx context.Context, req *proto.HelloRequest, rsp
 	*rsp = proto.HelloReply{
 		Message: fmt.Sprintf("hello %s!", req.Name),
 	}
-
-	fmt.Println("kkkkk")
 	return nil
 }

@@ -13,7 +13,7 @@ func main() {
 	app := zmicro.New(zmicro.InitRpcServer(InitRpcServer))
 
 	if err := app.Run(); err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(err)
 	}
 }
 

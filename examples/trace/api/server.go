@@ -15,7 +15,7 @@ func main() {
 	app := zmicro.New(zmicro.InitHttpServer(InitHttpServer))
 
 	if err := app.Run(); err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(err)
 	}
 }
 
@@ -27,7 +27,7 @@ func InitHttpServer(r *gin.Engine) error {
 			client.Tracing(true),
 		)
 		if err != nil {
-			log.Error(err.Error())
+			log.Error(err)
 			return
 		}
 		cli := proto.NewGreeterClient(cc.GetXClient())
@@ -40,7 +40,7 @@ func InitHttpServer(r *gin.Engine) error {
 
 		reply, err := cli.SayHello(c.Request.Context(), args)
 		if err != nil {
-			log.Error(err.Error())
+			log.Error(err)
 			return
 		}
 

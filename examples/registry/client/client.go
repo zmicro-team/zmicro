@@ -15,7 +15,7 @@ func main() {
 		client.EtcdAddr([]string{"127.0.0.1:2379"}),
 	)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error(err)
 		return
 	}
 	cli := proto.NewGreeterClient(c.GetXClient())
@@ -26,7 +26,7 @@ func main() {
 
 	rsp, err := cli.SayHello(context.Background(), req)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error(err)
 		return
 	}
 	log.Infof("reply: %s", rsp.Message)
