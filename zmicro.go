@@ -2,6 +2,8 @@ package zmicro
 
 import (
 	"flag"
+	"go.uber.org/zap/zapcore"
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,6 +13,7 @@ import (
 	"github.com/iobrother/zmicro/core/transport/http"
 	"github.com/iobrother/zmicro/core/transport/rpc/server"
 	"github.com/iobrother/zmicro/core/util/env"
+	"github.com/natefinch/lumberjack"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/propagation"
@@ -36,6 +39,14 @@ type zconfig struct {
 	App struct {
 		Mode string
 		Name string
+	}
+	Logger struct {
+		Level      string `json:"level"`
+		Filename   string `json:"filename"`
+		MaxSize    int    `json:"maxSize"`
+		MaxBackups int    `json:"maxBackups"`
+		MaxAge     int    `json:"maxAge"`
+		Compress   bool   `json:"compress"`
 	}
 	Http struct {
 		Addr string
@@ -69,7 +80,37 @@ func New(opts ...Option) *App {
 		log.Fatal(err.Error())
 	}
 
+	if zc.App.Name == "" {
+		log.Fatal("配置项app.name不能为空")
+	}
+
 	env.Set(zc.App.Mode)
+
+	level, err := zapcore.ParseLevel(zc.Logger.Level)
+	if err != nil {
+		level = log.InfoLevel
+	}
+	if env.IsDevelop() {
+		w := &lumberjack.Logger{
+			Filename:   zc.Logger.Filename,
+			MaxSize:    zc.Logger.MaxSize,
+			MaxBackups: zc.Logger.MaxBackups,
+			MaxAge:     zc.Logger.MaxAge,
+			Compress:   zc.Logger.Compress,
+		}
+		l := log.NewTee([]io.Writer{os.Stderr, w}, level, log.WithCaller(true))
+		log.ResetDefault(l)
+	} else {
+		w := &lumberjack.Logger{
+			Filename:   zc.Logger.Filename,
+			MaxSize:    zc.Logger.MaxSize,
+			MaxBackups: zc.Logger.MaxBackups,
+			MaxAge:     zc.Logger.MaxAge,
+			Compress:   zc.Logger.Compress,
+		}
+		l := log.New(w, level, log.WithCaller(true))
+		log.ResetDefault(l)
+	}
 
 	app := &App{
 		opts: options,
