@@ -4,7 +4,7 @@ package env
 
 import "os"
 
-const EnvZmicro = "ZMICRO_ENV"
+const ZMicroMode = "ZMICRO_MODE"
 
 type Env int8
 
@@ -35,7 +35,7 @@ func Set(s string) {
 
 func Get() Env {
 	if current == None {
-		env := os.Getenv(EnvZmicro)
+		env := os.Getenv(ZMicroMode)
 		if env == "" {
 			current = Develop
 		} else {

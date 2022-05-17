@@ -1,6 +1,8 @@
 package config
 
 import (
+	"bytes"
+	"encoding/json"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -16,6 +18,7 @@ func Default() *Config {
 func ResetDefault(c *Config) {
 	defaultConfig = c
 
+	Unmarshal = defaultConfig.Unmarshal
 	Scan = defaultConfig.Scan
 	Get = defaultConfig.Get
 	GetString = defaultConfig.GetString
@@ -30,6 +33,7 @@ func ResetDefault(c *Config) {
 
 type Config struct {
 	v    *viper.Viper
+	data []byte
 	opts Options
 }
 
@@ -68,10 +72,26 @@ func (c *Config) load() error {
 		return err
 	}
 
+	callback := func() {
+		for i := range c.opts.Callbacks {
+			c.opts.Callbacks[i]()
+		}
+	}
 	c.v.OnConfigChange(func(e fsnotify.Event) {
+		data, _ := json.Marshal(c.v.AllSettings())
+		if bytes.Compare(data, c.data) != 0 {
+			c.data = data
+			callback()
+		}
 	})
 	c.v.WatchConfig()
+	c.data, _ = json.Marshal(c.v.AllSettings())
+	callback()
 	return nil
+}
+
+func (c *Config) Unmarshal(val any) error {
+	return c.v.Unmarshal(val)
 }
 
 func (c *Config) Scan(key string, val any) error {
@@ -115,6 +135,7 @@ func (c *Config) GetStringMap(key string) map[string]any {
 }
 
 var (
+	Unmarshal      = defaultConfig.Unmarshal
 	Scan           = defaultConfig.Scan
 	Get            = defaultConfig.Get
 	GetString      = defaultConfig.GetString

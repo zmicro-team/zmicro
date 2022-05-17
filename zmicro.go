@@ -2,7 +2,6 @@ package zmicro
 
 import (
 	"flag"
-	"github.com/iobrother/zmicro/core/util/env"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,6 +10,7 @@ import (
 	"github.com/iobrother/zmicro/core/log"
 	"github.com/iobrother/zmicro/core/transport/http"
 	"github.com/iobrother/zmicro/core/transport/rpc/server"
+	"github.com/iobrother/zmicro/core/util/env"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/propagation"
@@ -36,7 +36,6 @@ type zconfig struct {
 	App struct {
 		Mode string
 		Name string
-		Addr string
 	}
 	Http struct {
 		Addr string
@@ -62,28 +61,16 @@ func New(opts ...Option) *App {
 		log.Fatal("config file not exists")
 	}
 
-	c := config.New(config.Path(cfgFile))
+	c := config.New(config.Path(cfgFile), config.Callbacks(options.ConfigCallbacks...))
 	config.ResetDefault(c)
 
 	zc := &zconfig{}
-	if err = config.Scan("app", &zc.App); err != nil {
-		log.Fatal(err.Error())
-	}
-	if err = config.Scan("http", &zc.Http); err != nil {
-		log.Fatal(err.Error())
-	}
-	if err = config.Scan("rpc", &zc.Rpc); err != nil {
-		log.Fatal(err.Error())
-	}
-	if err = config.Scan("tracer", &zc.Tracer); err != nil {
-		log.Fatal(err.Error())
-	}
-	if err = config.Scan("registry", &zc.Registry); err != nil {
+	if err = config.Unmarshal(zc); err != nil {
 		log.Fatal(err.Error())
 	}
 
 	env.Set(zc.App.Mode)
-	
+
 	app := &App{
 		opts: options,
 		zc:   zc,

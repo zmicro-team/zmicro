@@ -1,11 +1,9 @@
 package config
 
-import "context"
-
 type Options struct {
-	Type    string
-	Path    string
-	Context context.Context
+	Type      string
+	Path      string
+	Callbacks []func()
 }
 
 type Option func(o *Options)
@@ -22,11 +20,8 @@ func Path(p string) Option {
 	}
 }
 
-func SetOption(k, v any) Option {
-	return func(opts *Options) {
-		if opts.Context == nil {
-			opts.Context = context.Background()
-		}
-		opts.Context = context.WithValue(opts.Context, k, v)
+func Callbacks(f ...func()) Option {
+	return func(o *Options) {
+		o.Callbacks = f
 	}
 }

@@ -6,8 +6,9 @@ import (
 )
 
 type Options struct {
-	InitRpcServer  server.InitRpcServerFunc
-	InitHttpServer http.InitHttpServerFunc
+	InitRpcServer   server.InitRpcServerFunc
+	InitHttpServer  http.InitHttpServerFunc
+	ConfigCallbacks []func()
 }
 
 type Option func(*Options)
@@ -31,5 +32,11 @@ func InitRpcServer(f server.InitRpcServerFunc) Option {
 func InitHttpServer(f http.InitHttpServerFunc) Option {
 	return func(o *Options) {
 		o.InitHttpServer = f
+	}
+}
+
+func ConfigCallbacks(f ...func()) Option {
+	return func(o *Options) {
+		o.ConfigCallbacks = f
 	}
 }
