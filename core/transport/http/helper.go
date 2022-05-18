@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/iobrother/zmicro/core/errors"
+	"github.com/zmicro-team/zmicro/core/errors"
 )
 
 func Error(c *gin.Context, err error) {

@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/iobrother/zmicro/core/errors"
+	"github.com/zmicro-team/zmicro/core/errors"
 )
 
 const (

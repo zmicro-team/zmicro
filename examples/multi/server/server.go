@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/iobrother/zmicro"
-	"github.com/iobrother/zmicro/core/log"
-	zgin "github.com/iobrother/zmicro/core/transport/http"
-	"github.com/iobrother/zmicro/examples/multi/server/api"
-	"github.com/iobrother/zmicro/examples/proto"
 	"github.com/smallnest/rpcx/server"
+	"github.com/zmicro-team/zmicro"
+	"github.com/zmicro-team/zmicro/core/log"
+	zgin "github.com/zmicro-team/zmicro/core/transport/http"
+	"github.com/zmicro-team/zmicro/examples/multi/server/api"
+	"github.com/zmicro-team/zmicro/examples/proto"
 )
 
 func main() {

@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 
-	"github.com/iobrother/zmicro/core/log"
-	"github.com/iobrother/zmicro/core/transport/rpc/client"
-	"github.com/iobrother/zmicro/examples/proto"
+	"github.com/zmicro-team/zmicro/core/log"
+	"github.com/zmicro-team/zmicro/core/transport/rpc/client"
+	"github.com/zmicro-team/zmicro/examples/proto"
 )
 
 func main() {

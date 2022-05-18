@@ -1,4 +1,4 @@
-module github.com/iobrother/zmicro
+module github.com/zmicro-team/zmicro
 
 go 1.18
 

@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/iobrother/zmicro"
-	"github.com/iobrother/zmicro/core/log"
-	"github.com/iobrother/zmicro/examples/errors/errno"
-	"github.com/iobrother/zmicro/examples/proto"
 	"github.com/smallnest/rpcx/server"
+	"github.com/zmicro-team/zmicro"
+	"github.com/zmicro-team/zmicro/core/log"
+	"github.com/zmicro-team/zmicro/examples/errors/errno"
+	"github.com/zmicro-team/zmicro/examples/proto"
 )
 
 func main() {

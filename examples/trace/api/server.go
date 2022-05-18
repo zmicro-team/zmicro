@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/iobrother/zmicro"
-	"github.com/iobrother/zmicro/core/log"
-	"github.com/iobrother/zmicro/core/transport/rpc/client"
-	"github.com/iobrother/zmicro/examples/proto"
+	"github.com/zmicro-team/zmicro"
+	"github.com/zmicro-team/zmicro/core/log"
+	"github.com/zmicro-team/zmicro/core/transport/rpc/client"
+	"github.com/zmicro-team/zmicro/examples/proto"
 )
 
 // curl http://127.0.0.1:5180/hello/zmicro

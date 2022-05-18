@@ -3,14 +3,14 @@ package http
 import (
 	"context"
 	"errors"
-	"github.com/iobrother/zmicro/core/transport/http/middleware/logging"
+	"github.com/zmicro-team/zmicro/core/transport/http/middleware/logging"
 	"net"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/iobrother/zmicro/core/log"
-	"github.com/iobrother/zmicro/core/transport/http/middleware/tracing"
+	"github.com/zmicro-team/zmicro/core/log"
+	"github.com/zmicro-team/zmicro/core/transport/http/middleware/tracing"
 )
 
 type Server struct {

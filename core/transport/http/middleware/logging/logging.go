@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/iobrother/zmicro/core/log"
-	"github.com/iobrother/zmicro/core/util/env"
+	"github.com/zmicro-team/zmicro/core/log"
+	"github.com/zmicro-team/zmicro/core/util/env"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )

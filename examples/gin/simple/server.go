@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/iobrother/zmicro"
-	"github.com/iobrother/zmicro/core/log"
+	"github.com/zmicro-team/zmicro"
+	"github.com/zmicro-team/zmicro/core/log"
 )
 
 // curl http://127.0.0.1:5180/hello/zmicro

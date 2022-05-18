@@ -1,10 +1,10 @@
 package client
 
 import (
-	"github.com/iobrother/zmicro/core/log"
 	etcd_client "github.com/rpcxio/rpcx-etcd/client"
 	"github.com/smallnest/rpcx/client"
 	"github.com/smallnest/rpcx/protocol"
+	"github.com/zmicro-team/zmicro/core/log"
 	"go.opentelemetry.io/otel"
 )
 

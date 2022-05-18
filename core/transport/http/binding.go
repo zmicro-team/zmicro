@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/iobrother/zmicro/core/errors"
+	"github.com/zmicro-team/zmicro/core/errors"
 )
 
 var disableBindValidation bool

@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/iobrother/zmicro/examples/gin/swagger/docs"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"github.com/swaggo/swag"
+	"github.com/zmicro-team/zmicro/examples/gin/swagger/docs"
 )
 
 func Swagger(r gin.IRouter) {

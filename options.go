@@ -1,8 +1,8 @@
 package zmicro
 
 import (
-	"github.com/iobrother/zmicro/core/transport/http"
-	"github.com/iobrother/zmicro/core/transport/rpc/server"
+	"github.com/zmicro-team/zmicro/core/transport/http"
+	"github.com/zmicro-team/zmicro/core/transport/rpc/server"
 )
 
 type Options struct {
