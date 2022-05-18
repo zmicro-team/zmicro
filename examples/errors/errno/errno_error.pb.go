@@ -8,7 +8,7 @@ package errno
 
 import (
 	fmt "fmt"
-	errors "github.com/iobrother/zmicro/core/errors"
+	errors "github.com/zmicro-team/zmicro/core/errors"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

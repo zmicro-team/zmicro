@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/iobrother/zmicro/examples/errno";
+option go_package = "github.com/zmicro-team/zmicro/examples/errno";
 package errno;
 
 import "core/errors/errors.proto";

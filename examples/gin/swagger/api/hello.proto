@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/iobrother/zmicro/examples/gin/swagger/api";
+option go_package = "github.com/zmicro-team/zmicro/examples/gin/swagger/api";
 
 package api;
 

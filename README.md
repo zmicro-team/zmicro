@@ -6,15 +6,15 @@ https://iobrother.com/
 
 ## 简介
 
-zmicro是一套微服务开发解决方案，旨在帮助中小企业与广大go爱好者打造一套可落地的微服务方案
+zmicro 是一套微服务开发解决方案，旨在帮助中小企业与广大 go 爱好者打造一套可落地的微服务方案
 
-zmicro集成了流行的web框架 [gin](https://github.com/gin-gonic/gin) 与 极简的rpc框架 [rpcx](https://github.com/smallnest/rpcx)
+zmicro 集成了流行的 web 框架 [gin](https://github.com/gin-gonic/gin) 与 极简的 rpc 框架 [rpcx](https://github.com/smallnest/rpcx)
 
 ## 目标
 
 - 极简：简单易学，易于开发与维护
-- 效率：通过工具生成gin代码，rpcx代码，错误代码，以及API文档，提高开发效率
-- 性能：WEB框架gin与RPC框架rpcx在性能上处于业界领先
+- 效率：通过工具生成 gin 代码，rpcx 代码，错误代码，以及 API 文档，提高开发效率
+- 性能：WEB框架 gin 与 RPC 框架 rpcx 在性能上处于业界领先
 
 ## 快速开始
 
@@ -23,7 +23,7 @@ zmicro集成了流行的web框架 [gin](https://github.com/gin-gonic/gin) 与 �
 ```protobuf
 syntax = "proto3";
 
-option go_package = "github.com/iobrother/zmicro/examples/proto";
+option go_package = "github.com/zmicro-team/zmicro/examples/proto";
 
 package proto;
 
@@ -80,9 +80,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/iobrother/zmicro"
-	"github.com/iobrother/zmicro/core/log"
-	"github.com/iobrother/zmicro/examples/proto"
+	"github.com/zmicro-team/zmicro"
+	"github.com/zmicro-team/zmicro/core/log"
+	"github.com/zmicro-team/zmicro/examples/proto"
 	"github.com/smallnest/rpcx/server"
 )
 
@@ -121,9 +121,9 @@ package main
 import (
 	"context"
 
-	"github.com/iobrother/zmicro/core/log"
-	"github.com/iobrother/zmicro/core/transport/rpc/client"
-	"github.com/iobrother/zmicro/examples/proto"
+	"github.com/zmicro-team/zmicro/core/log"
+	"github.com/zmicro-team/zmicro/core/transport/rpc/client"
+	"github.com/zmicro-team/zmicro/examples/proto"
 )
 
 func main() {
@@ -163,4 +163,4 @@ go run client.go
 
 ## 源码地址
 
-https://github.com/iobrother/zmicro/tree/master/examples/greeter
+https://github.com/zmicro-team/zmicro/tree/master/examples/greeter

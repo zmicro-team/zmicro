@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/natefinch/lumberjack"
 	"github.com/zmicro-team/zmicro/core/config"
 	"github.com/zmicro-team/zmicro/core/log"
 	"github.com/zmicro-team/zmicro/core/transport/http"
@@ -20,6 +19,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 var cfgFile string

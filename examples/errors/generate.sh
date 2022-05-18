@@ -25,7 +25,7 @@ for ERROR in $ERRORS; do
   --gofast_out=. \
   --gofast_opt paths=source_relative \
   --zmicro-errno_out=. \
-  --zmicro-errno_opt epk=github.com/iobrother/zmicro/core/errors \
+  --zmicro-errno_opt epk=github.com/zmicro-team/zmicro/core/errors \
   --zmicro-errno_opt paths=source_relative \
   $ERROR
 done

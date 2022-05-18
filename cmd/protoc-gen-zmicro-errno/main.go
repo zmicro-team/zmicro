@@ -12,7 +12,7 @@ import (
 const version = "0.1.0"
 
 var showVersion = flag.Bool("version", false, "print the version and exit")
-var errorsPackage = flag.String("epk", "github.com/iobrother/zmicro/core/errors", "errors core package in your project")
+var errorsPackage = flag.String("epk", "github.com/zmicro-team/zmicro/core/errors", "errors core package in your project")
 
 func main() {
 	flag.Parse()

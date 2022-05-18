@@ -119,8 +119,8 @@ func (m *HelloReply) GetMessage() string {
 }
 
 func init() {
-	proto.RegisterType((*HelloRequest)(nil), "github.com.iobrother.zmicro.examples.multi.server.api.HelloRequest")
-	proto.RegisterType((*HelloReply)(nil), "github.com.iobrother.zmicro.examples.multi.server.api.HelloReply")
+	proto.RegisterType((*HelloRequest)(nil), "github.com.zmicro-team.zmicro.examples.multi.server.api.HelloRequest")
+	proto.RegisterType((*HelloReply)(nil), "github.com.zmicro-team.zmicro.examples.multi.server.api.HelloReply")
 }
 
 func init() { proto.RegisterFile("api/hello.proto", fileDescriptor_860c41a0e7a04411) }
