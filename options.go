@@ -5,10 +5,13 @@ import (
 	"github.com/zmicro-team/zmicro/core/transport/rpc/server"
 )
 
+type BeforeFunc func() error
+
 type Options struct {
 	InitRpcServer   server.InitRpcServerFunc
 	InitHttpServer  http.InitHttpServerFunc
 	ConfigCallbacks []func()
+	Before          BeforeFunc
 }
 
 type Option func(*Options)
@@ -38,5 +41,11 @@ func InitHttpServer(f http.InitHttpServerFunc) Option {
 func ConfigCallbacks(f ...func()) Option {
 	return func(o *Options) {
 		o.ConfigCallbacks = f
+	}
+}
+
+func Before(f BeforeFunc) Option {
+	return func(o *Options) {
+		o.Before = f
 	}
 }

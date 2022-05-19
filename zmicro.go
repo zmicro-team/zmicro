@@ -177,6 +177,11 @@ func setTracerProvider(endpoint string, name string) *trace.TracerProvider {
 }
 
 func (a *App) Run() error {
+	if a.opts.Before != nil {
+		if err := a.opts.Before(); err != nil {
+			return err
+		}
+	}
 	if a.rpcServer != nil {
 		if err := a.rpcServer.Start(); err != nil {
 			return err
