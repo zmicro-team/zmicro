@@ -3,7 +3,7 @@ package config
 type Options struct {
 	Type      string
 	Path      string
-	Callbacks []func()
+	Callbacks []func(IConfig)
 }
 
 type Option func(o *Options)
@@ -20,7 +20,7 @@ func Path(p string) Option {
 	}
 }
 
-func Callbacks(f ...func()) Option {
+func Callbacks(f ...func(IConfig)) Option {
 	return func(o *Options) {
 		o.Callbacks = f
 	}
