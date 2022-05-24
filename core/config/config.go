@@ -91,13 +91,11 @@ func (c *Config) load() error {
 }
 
 func (c *Config) Unmarshal(val any) error {
-	temp, _ := json.Marshal(c.v.AllSettings())
-	return json.Unmarshal(temp, val)
+	return c.v.Unmarshal(val)
 }
 
 func (c *Config) Scan(key string, val any) error {
-	temp, _ := json.Marshal(c.Get(key).(map[string]interface{}))
-	return json.Unmarshal(temp, val)
+	return c.v.UnmarshalKey(key, val)
 }
 
 func (c *Config) Get(key string) any {
