@@ -11,24 +11,12 @@ import (
 
 var defaultConfig = New()
 
-func Default() *Config {
+func Default() IConfig {
 	return defaultConfig
 }
 
-func ResetDefault(c *Config) {
+func ResetDefault(c IConfig) {
 	defaultConfig = c
-
-	Unmarshal = defaultConfig.Unmarshal
-	Scan = defaultConfig.Scan
-	Get = defaultConfig.Get
-	GetString = defaultConfig.GetString
-	GetBool = defaultConfig.GetBool
-	GetInt = defaultConfig.GetInt
-	GetFloat64 = defaultConfig.GetFloat64
-	GetDuration = defaultConfig.GetDuration
-	GetIntSlice = defaultConfig.GetIntSlice
-	GetStringSlice = defaultConfig.GetStringSlice
-	GetStringMap = defaultConfig.GetStringMap
 }
 
 type Config struct {
@@ -37,7 +25,7 @@ type Config struct {
 	opts Options
 }
 
-func New(opts ...Option) *Config {
+func New(opts ...Option) IConfig {
 	options := Options{
 		Type: "yaml",
 	}
@@ -72,30 +60,32 @@ func (c *Config) load() error {
 		return err
 	}
 
-	callback := func() {
+	callback := func(cfg IConfig) {
 		for i := range c.opts.Callbacks {
-			c.opts.Callbacks[i]()
+			c.opts.Callbacks[i](cfg)
 		}
 	}
 	c.v.OnConfigChange(func(e fsnotify.Event) {
 		data, _ := json.Marshal(c.v.AllSettings())
 		if bytes.Compare(data, c.data) != 0 {
 			c.data = data
-			callback()
+			callback(c)
 		}
 	})
 	c.v.WatchConfig()
 	c.data, _ = json.Marshal(c.v.AllSettings())
-	callback()
+	callback(c)
 	return nil
 }
 
 func (c *Config) Unmarshal(val any) error {
-	return c.v.Unmarshal(val)
+	temp, _ := json.Marshal(c.v.AllSettings())
+	return json.Unmarshal(temp, val)
 }
 
 func (c *Config) Scan(key string, val any) error {
-	return c.v.UnmarshalKey(key, val)
+	temp, _ := json.Marshal(c.Get(key).(map[string]interface{}))
+	return json.Unmarshal(temp, val)
 }
 
 func (c *Config) Get(key string) any {
@@ -134,16 +124,16 @@ func (c *Config) GetStringMap(key string) map[string]any {
 	return c.v.GetStringMap(key)
 }
 
-var (
-	Unmarshal      = defaultConfig.Unmarshal
-	Scan           = defaultConfig.Scan
-	Get            = defaultConfig.Get
-	GetString      = defaultConfig.GetString
-	GetBool        = defaultConfig.GetBool
-	GetInt         = defaultConfig.GetInt
-	GetFloat64     = defaultConfig.GetFloat64
-	GetDuration    = defaultConfig.GetDuration
-	GetIntSlice    = defaultConfig.GetIntSlice
-	GetStringSlice = defaultConfig.GetStringSlice
-	GetStringMap   = defaultConfig.GetStringMap
-)
+type IConfig interface {
+	Unmarshal(val any) error
+	Scan(key string, val any) error
+	Get(key string) any
+	GetString(key string) string
+	GetBool(key string) bool
+	GetInt(key string) int
+	GetFloat64(key string) float64
+	GetDuration(key string) time.Duration
+	GetIntSlice(key string) []int
+	GetStringSlice(key string) []string
+	GetStringMap(key string) map[string]any
+}

@@ -2,11 +2,13 @@ package zmicro
 
 import (
 	"flag"
-	"go.uber.org/zap/zapcore"
+	"fmt"
 	"io"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"go.uber.org/zap/zapcore"
 
 	"github.com/zmicro-team/zmicro/core/config"
 	"github.com/zmicro-team/zmicro/core/log"
@@ -76,10 +78,10 @@ func New(opts ...Option) *App {
 	config.ResetDefault(c)
 
 	zc := &zconfig{}
-	if err = config.Unmarshal(zc); err != nil {
+	if err = config.Default().Unmarshal(zc); err != nil {
 		log.Fatal(err.Error())
 	}
-
+	fmt.Println(zc)
 	if zc.App.Name == "" {
 		log.Fatal("配置项app.name不能为空")
 	}

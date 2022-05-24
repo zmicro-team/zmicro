@@ -1,6 +1,7 @@
 package zmicro
 
 import (
+	"github.com/zmicro-team/zmicro/core/config"
 	"github.com/zmicro-team/zmicro/core/transport/http"
 	"github.com/zmicro-team/zmicro/core/transport/rpc/server"
 )
@@ -10,7 +11,7 @@ type BeforeFunc func() error
 type Options struct {
 	InitRpcServer   server.InitRpcServerFunc
 	InitHttpServer  http.InitHttpServerFunc
-	ConfigCallbacks []func()
+	ConfigCallbacks []func(config.IConfig)
 	Before          BeforeFunc
 }
 
@@ -38,7 +39,7 @@ func InitHttpServer(f http.InitHttpServerFunc) Option {
 	}
 }
 
-func ConfigCallbacks(f ...func()) Option {
+func ConfigCallbacks(f ...func(config.IConfig)) Option {
 	return func(o *Options) {
 		o.ConfigCallbacks = f
 	}
