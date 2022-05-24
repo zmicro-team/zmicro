@@ -17,6 +17,18 @@ func Default() IConfig {
 
 func ResetDefault(c IConfig) {
 	defaultConfig = c
+
+	Unmarshal = defaultConfig.Unmarshal
+	Scan = defaultConfig.Scan
+	Get = defaultConfig.Get
+	GetString = defaultConfig.GetString
+	GetBool = defaultConfig.GetBool
+	GetInt = defaultConfig.GetInt
+	GetFloat64 = defaultConfig.GetFloat64
+	GetDuration = defaultConfig.GetDuration
+	GetIntSlice = defaultConfig.GetIntSlice
+	GetStringSlice = defaultConfig.GetStringSlice
+	GetStringMap = defaultConfig.GetStringMap
 }
 
 type Config struct {
@@ -137,3 +149,17 @@ type IConfig interface {
 	GetStringSlice(key string) []string
 	GetStringMap(key string) map[string]any
 }
+
+var (
+	Unmarshal      = defaultConfig.Unmarshal
+	Scan           = defaultConfig.Scan
+	Get            = defaultConfig.Get
+	GetString      = defaultConfig.GetString
+	GetBool        = defaultConfig.GetBool
+	GetInt         = defaultConfig.GetInt
+	GetFloat64     = defaultConfig.GetFloat64
+	GetDuration    = defaultConfig.GetDuration
+	GetIntSlice    = defaultConfig.GetIntSlice
+	GetStringSlice = defaultConfig.GetStringSlice
+	GetStringMap   = defaultConfig.GetStringMap
+)
