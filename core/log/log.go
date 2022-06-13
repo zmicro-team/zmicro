@@ -232,43 +232,7 @@ func New(writer io.Writer, level Level, opts ...Option) *Logger {
 	if writer == nil {
 		panic("the writer is nil")
 	}
-
-	logger := &Logger{callSkip: 1}
-	lv := zap.NewAtomicLevelAt(level)
-	logger.lv = &lv
-	for _, opt := range opts {
-		opt.apply(logger)
-	}
-
-	cfg := zap.NewProductionConfig()
-	if logger.development {
-		cfg = zap.NewDevelopmentConfig()
-	}
-	cfg.EncoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-		enc.AppendString(t.Format("2006-01-02T15:04:05.000Z0700"))
-	}
-	var enc zapcore.Encoder
-	if logger.development {
-		enc = zapcore.NewConsoleEncoder(cfg.EncoderConfig)
-	} else {
-		enc = zapcore.NewJSONEncoder(cfg.EncoderConfig)
-	}
-
-	core := zapcore.NewCore(
-		enc,
-		zapcore.AddSync(writer),
-		lv,
-	)
-
-	options := []zap.Option{zap.WithCaller(logger.addCaller)}
-	if logger.development {
-		options = append(options, zap.Development())
-	}
-	options = append(options, zap.AddCallerSkip(logger.callSkip))
-
-	logger.l = zap.New(core, options...)
-
-	return logger
+	return NewTee([]io.Writer{writer}, level, opts...)
 }
 
 func (l *Logger) Sync() error {
@@ -277,6 +241,10 @@ func (l *Logger) Sync() error {
 
 func (l *Logger) SetLevel(lv Level) {
 	l.lv.SetLevel(lv)
+}
+
+func (l *Logger) Logger() *zap.Logger {
+	return l.l
 }
 
 func Sync() error {
