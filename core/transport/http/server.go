@@ -3,12 +3,14 @@ package http
 import (
 	"context"
 	"errors"
-	"github.com/zmicro-team/zmicro/core/transport/http/middleware/logging"
 	"net"
 	"net/http"
 	"time"
 
+	"github.com/zmicro-team/zmicro/core/transport/http/middleware/logging"
+
 	"github.com/gin-gonic/gin"
+
 	"github.com/zmicro-team/zmicro/core/log"
 	"github.com/zmicro-team/zmicro/core/transport/http/middleware/tracing"
 )
@@ -40,10 +42,7 @@ func (s *Server) Init(opts ...Option) {
 }
 
 func (s *Server) Start() error {
-	s.Engine.Use(func(c *gin.Context) {
-		ctx := NewContext(c.Request.Context(), c)
-		c.Request = c.Request.WithContext(ctx)
-	})
+	s.Engine.Use(TransportInterceptor())
 
 	if s.opts.Tracing {
 		s.Engine.Use(tracing.Trace(s.opts.Name))
