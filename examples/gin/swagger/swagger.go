@@ -2,9 +2,10 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"github.com/swaggo/swag"
+
 	"github.com/zmicro-team/zmicro/examples/gin/swagger/docs"
 )
 
