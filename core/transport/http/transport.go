@@ -8,11 +8,12 @@ import (
 	"github.com/zmicro-team/zmicro/core/transport"
 )
 
-var _ Transporter = new(Transport)
+var _ Transporter = (*Transport)(nil)
 
 // Transporter is http Transporter
 type Transporter interface {
 	transport.Transporter
+	Method() string
 	Route() string
 	GinContext() *gin.Context
 }
@@ -20,6 +21,7 @@ type Transporter interface {
 // Transport is an HTTP transport.
 type Transport struct {
 	fullPath       string
+	method         string
 	route          string
 	clientIp       string
 	requestHeader  header
@@ -45,6 +47,9 @@ func (tr *Transport) RequestHeader() transport.Header { return tr.requestHeader 
 // http: http.Header
 // grpc: metadata.MD
 func (tr *Transport) ResponseHeader() transport.Header { return tr.responseHeader }
+
+// Method Service http method
+func (tr *Transport) Method() string { return tr.method }
 
 // Route Service full route
 func (tr *Transport) Route() string { return tr.route }
@@ -80,6 +85,7 @@ func TransportInterceptor() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tr := &Transport{
 			c.Request.URL.Path,
+			c.Request.Method,
 			c.FullPath(),
 			c.ClientIP(),
 			header(c.Request.Header),

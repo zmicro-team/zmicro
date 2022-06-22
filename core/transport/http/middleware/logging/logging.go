@@ -10,10 +10,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/zmicro-team/zmicro/core/log"
-	"github.com/zmicro-team/zmicro/core/util/env"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
+
+	"github.com/zmicro-team/zmicro/core/log"
+	"github.com/zmicro-team/zmicro/core/util/env"
 )
 
 var (
@@ -69,11 +70,11 @@ func Log() gin.HandlerFunc {
 		c.Writer = writer
 
 		defer func() {
-			//if c.Request.RequestURI
+			// if c.Request.RequestURI
 			if checkPrefix(c.Request.RequestURI, "/swagger") {
 				return
 			}
-			var fields []zap.Field
+			fields := make([]zap.Field, 0, 14)
 			traceId := getTraceId(c.Request.Context())
 			if traceId != "" {
 				fields = append(fields, zap.String("trace_id", traceId))
