@@ -538,8 +538,8 @@ github.com/rogpeppe/go-internal v1.8.0 h1:FCbCCtXNOY3UtUuHUYaghJg4y7Fd14rXifAYUA
 github.com/rogpeppe/go-internal v1.8.0/go.mod h1:WmiCO8CzOY8rg0OYDC4/i/2WRWAB6poM+XZ2dLUbcbE=
 github.com/rpcxio/libkv v0.5.1-0.20210420120011-1fceaedca8a5 h1:oGficf/KJp1y22zTpjjCRtjtNM9QRjww3fqyQPLgypg=
 github.com/rpcxio/libkv v0.5.1-0.20210420120011-1fceaedca8a5/go.mod h1:zHGgtLr3cFhGtbalum0BrMPOjhFZFJXCKiws/25ewls=
-github.com/rpcxio/rpcx-etcd v0.1.0 h1:vMfi/4ntQ4nDxRhyOBLTLPXFeQtuXIGMzdsBzUzJABg=
-github.com/rpcxio/rpcx-etcd v0.1.0/go.mod h1:pW2koxtHWXX/c9y8UTM1MK3ItPgddT9PGducZF40IJ0=
+github.com/rpcxio/rpcx-etcd v0.2.0 h1:cBSWWQrDArHiga+CAS+zHQbSYWhX1xvzXHl7r0KBXW8=
+github.com/rpcxio/rpcx-etcd v0.2.0/go.mod h1:pW2koxtHWXX/c9y8UTM1MK3ItPgddT9PGducZF40IJ0=
 github.com/rs/cors v1.8.2 h1:KCooALfAYGs415Cwu5ABvv9n9509fSiG5SQJn/AQo4U=
 github.com/rs/cors v1.8.2/go.mod h1:XyqrcTp5zjWr1wsJ8PIRZssZ8b/WMcMf71DJnit4EMU=
 github.com/rubyist/circuitbreaker v2.2.1+incompatible h1:KUKd/pV8Geg77+8LNDwdow6rVCAYOp8+kHUyFvL6Mhk=
