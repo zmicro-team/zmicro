@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"go.opentelemetry.io/otel"
 	"net"
 	"strings"
 	"time"
@@ -10,6 +9,8 @@ import (
 	etcdServerPlugin "github.com/rpcxio/rpcx-etcd/serverplugin"
 	"github.com/smallnest/rpcx/server"
 	"github.com/smallnest/rpcx/serverplugin"
+	"go.opentelemetry.io/otel"
+
 	"github.com/zmicro-team/zmicro/core/log"
 	"github.com/zmicro-team/zmicro/core/util/addr"
 	znet "github.com/zmicro-team/zmicro/core/util/net"

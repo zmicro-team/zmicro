@@ -79,7 +79,7 @@ func (c *Config) load() error {
 	}
 	c.v.OnConfigChange(func(e fsnotify.Event) {
 		data, _ := json.Marshal(c.v.AllSettings())
-		if bytes.Compare(data, c.data) != 0 {
+		if !bytes.Equal(data, c.data) {
 			c.data = data
 			callback(c)
 		}
