@@ -9,7 +9,7 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
-	github.com/rpcxio/rpcx-etcd v0.1.0
+	github.com/rpcxio/rpcx-etcd v0.2.0
 	github.com/smallnest/rpcx v1.7.4
 	github.com/spf13/viper v1.11.0
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe
