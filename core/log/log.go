@@ -1,172 +1,17 @@
 package log
 
 import (
+	"context"
 	"fmt"
 	"io"
-	"os"
 	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-type Level = zapcore.Level
-
-const (
-	DebugLevel  Level = zap.DebugLevel
-	InfoLevel   Level = zap.InfoLevel
-	WarnLevel   Level = zap.WarnLevel
-	ErrorLevel  Level = zap.ErrorLevel
-	DPanicLevel Level = zap.DPanicLevel
-	PanicLevel  Level = zap.PanicLevel
-	FatalLevel  Level = zap.FatalLevel
-)
-
-type Field = zap.Field
-
-func (l *Logger) Debug(v any, fields ...Field) {
-	l.l.Debug(fmt.Sprint(v), fields...)
-}
-
-func (l *Logger) Info(v any, fields ...Field) {
-	l.l.Info(fmt.Sprint(v), fields...)
-}
-
-func (l *Logger) Warn(v any, fields ...Field) {
-	l.l.Warn(fmt.Sprint(v), fields...)
-}
-
-func (l *Logger) Error(v any, fields ...Field) {
-	l.l.Error(fmt.Sprint(v), fields...)
-}
-
-func (l *Logger) DPanic(v any, fields ...Field) {
-	l.l.DPanic(fmt.Sprint(v), fields...)
-}
-
-func (l *Logger) Panic(v any, fields ...Field) {
-	l.l.Panic(fmt.Sprint(v), fields...)
-}
-
-func (l *Logger) Fatal(v any, fields ...Field) {
-	l.l.Fatal(fmt.Sprint(v), fields...)
-}
-
-func (l *Logger) Debugf(template string, args ...any) {
-	l.l.Sugar().Debugf(template, args...)
-}
-
-func (l *Logger) Infof(template string, args ...any) {
-	l.l.Sugar().Infof(template, args...)
-}
-
-func (l *Logger) Warnf(template string, args ...any) {
-	l.l.Sugar().Warnf(template, args...)
-}
-
-func (l *Logger) Errorf(template string, args ...any) {
-	l.l.Sugar().Errorf(template, args...)
-}
-
-func (l *Logger) DPanicf(template string, args ...any) {
-	l.l.Sugar().DPanicf(template, args...)
-}
-
-func (l *Logger) Panicf(template string, args ...any) {
-	l.l.Sugar().Panicf(template, args...)
-}
-
-func (l *Logger) Fatalf(template string, args ...any) {
-	l.l.Sugar().Fatalf(template, args...)
-}
-
-var (
-	Skip        = zap.Skip
-	Binary      = zap.Binary
-	Bool        = zap.Bool
-	Boolp       = zap.Boolp
-	ByteString  = zap.ByteString
-	Complex128  = zap.Complex128
-	Complex128p = zap.Complex128p
-	Complex64   = zap.Complex64
-	Complex64p  = zap.Complex64p
-	Float64     = zap.Float64
-	Float64p    = zap.Float64p
-	Float32     = zap.Float32
-	Float32p    = zap.Float32p
-	Int         = zap.Int
-	Intp        = zap.Intp
-	Int64       = zap.Int64
-	Int64p      = zap.Int64p
-	Int32       = zap.Int32
-	Int32p      = zap.Int32p
-	Int16       = zap.Int16
-	Int16p      = zap.Int16p
-	Int8        = zap.Int8
-	Int8p       = zap.Int8p
-	String      = zap.String
-	Stringp     = zap.Stringp
-	Uint        = zap.Uint
-	Uintp       = zap.Uintp
-	Uint64      = zap.Uint64
-	Uint64p     = zap.Uint64p
-	Uint32      = zap.Uint32
-	Uint32p     = zap.Uint32p
-	Uint16      = zap.Uint16
-	Uint16p     = zap.Uint16p
-	Uint8       = zap.Uint8
-	Uint8p      = zap.Uint8p
-	Uintptr     = zap.Uintptr
-	Uintptrp    = zap.Uintptrp
-	Reflect     = zap.Reflect
-	Namespace   = zap.Namespace
-	Stringer    = zap.Stringer
-	Time        = zap.Time
-	Timep       = zap.Timep
-	Stack       = zap.Stack
-	StackSkip   = zap.StackSkip
-	Duration    = zap.Duration
-	Durationp   = zap.Durationp
-	Any         = zap.Any
-
-	Debug   = defaultLogger.Debug
-	Info    = defaultLogger.Info
-	Warn    = defaultLogger.Warn
-	Error   = defaultLogger.Error
-	DPanic  = defaultLogger.DPanic
-	Panic   = defaultLogger.Panic
-	Fatal   = defaultLogger.Fatal
-	Debugf  = defaultLogger.Debugf
-	Infof   = defaultLogger.Infof
-	Warnf   = defaultLogger.Warnf
-	Errorf  = defaultLogger.Errorf
-	DPanicf = defaultLogger.DPanicf
-	Panicf  = defaultLogger.Panicf
-	Fatalf  = defaultLogger.Fatalf
-
-	SetLevel = defaultLogger.SetLevel
-)
-
-func ResetDefault(l *Logger) {
-	defaultLogger = l
-
-	Info = defaultLogger.Info
-	Warn = defaultLogger.Warn
-	Error = defaultLogger.Error
-	DPanic = defaultLogger.DPanic
-	Panic = defaultLogger.Panic
-	Fatal = defaultLogger.Fatal
-	Debug = defaultLogger.Debug
-	Infof = defaultLogger.Infof
-	Warnf = defaultLogger.Warnf
-	Errorf = defaultLogger.Errorf
-	DPanicf = defaultLogger.DPanicf
-	Panicf = defaultLogger.Panicf
-	Fatalf = defaultLogger.Fatalf
-	Debugf = defaultLogger.Debugf
-
-	SetLevel = defaultLogger.SetLevel
-}
+// Valuer is returns a log value.
+type Valuer func(ctx context.Context) Field
 
 type Logger struct {
 	l           *zap.Logger
@@ -174,16 +19,12 @@ type Logger struct {
 	development bool
 	addCaller   bool
 	callSkip    int
-}
-
-var defaultLogger = New(os.Stderr, InfoLevel, WithCaller(true))
-
-func Default() *Logger {
-	return defaultLogger
+	fn          []Valuer
+	ctx         context.Context
 }
 
 func NewTee(writers []io.Writer, level Level, opts ...Option) *Logger {
-	logger := &Logger{callSkip: 1}
+	logger := &Logger{callSkip: 1, ctx: context.Background()}
 	lv := zap.NewAtomicLevelAt(level)
 	logger.lv = &lv
 	for _, opt := range opts {
@@ -235,6 +76,10 @@ func New(writer io.Writer, level Level, opts ...Option) *Logger {
 	return NewTee([]io.Writer{writer}, level, opts...)
 }
 
+func (l *Logger) Logger() *zap.Logger {
+	return l.l
+}
+
 func (l *Logger) Sync() error {
 	return l.l.Sync()
 }
@@ -243,13 +88,192 @@ func (l *Logger) SetLevel(lv Level) {
 	l.lv.SetLevel(lv)
 }
 
-func (l *Logger) Logger() *zap.Logger {
-	return l.l
+// Enabled returns true if the given level is at or above this level.
+func (l *Logger) Enabled(lvl zapcore.Level) bool {
+	return l.lv.Enabled(lvl)
 }
 
-func Sync() error {
-	if defaultLogger != nil {
-		return defaultLogger.Sync()
+// V returns true if the given level is at or above this level.
+// same as Enabled
+func (l *Logger) V(lvl int) bool {
+	return l.lv.Enabled(zapcore.Level(lvl))
+}
+
+// WithValuer with Valuer function.
+func (l *Logger) WithValuer(fs ...Valuer) *Logger {
+	fn := make([]Valuer, 0, len(fs)+len(l.fn))
+	fn = append(fn, l.fn...)
+	fn = append(fn, fs...)
+	return &Logger{
+		l.l,
+		l.lv,
+		l.development,
+		l.addCaller,
+		l.callSkip,
+		fn,
+		l.ctx,
 	}
-	return nil
+}
+
+// WithContext return log with inject context.
+func (l *Logger) WithContext(ctx context.Context) *Logger {
+	return &Logger{
+		l.l,
+		l.lv,
+		l.development,
+		l.addCaller,
+		l.callSkip,
+		l.fn,
+		ctx,
+	}
+}
+
+// With creates a child logger and adds structured context to it. Fields added
+// to the child don't affect the parent, and vice versa.
+func (l *Logger) With(fields ...Field) *Logger {
+	return &Logger{
+		l.l.With(fields...),
+		l.lv,
+		l.development,
+		l.addCaller,
+		l.callSkip,
+		l.fn,
+		l.ctx,
+	}
+}
+
+// Named adds a sub-scope to the logger's name. See Log.Named for details.
+func (l *Logger) Named(name string) *Logger {
+	return &Logger{
+		l.l.Named(name),
+		l.lv,
+		l.development,
+		l.addCaller,
+		l.callSkip,
+		l.fn,
+		l.ctx,
+	}
+}
+
+func (l *Logger) Debug(v any, fields ...Field) {
+	if !l.lv.Enabled(DebugLevel) {
+		return
+	}
+	l.l.Debug(fmt.Sprint(v), injectFields(l.ctx, l.fn, fields...)...)
+}
+
+func (l *Logger) Info(v any, fields ...Field) {
+	if !l.lv.Enabled(InfoLevel) {
+		return
+	}
+	l.l.Info(fmt.Sprint(v), injectFields(l.ctx, l.fn, fields...)...)
+}
+
+func (l *Logger) Warn(v any, fields ...Field) {
+	if !l.lv.Enabled(WarnLevel) {
+		return
+	}
+	l.l.Warn(fmt.Sprint(v), injectFields(l.ctx, l.fn, fields...)...)
+}
+
+func (l *Logger) Error(v any, fields ...Field) {
+	if !l.lv.Enabled(ErrorLevel) {
+		return
+	}
+	l.l.Error(fmt.Sprint(v), injectFields(l.ctx, l.fn, fields...)...)
+}
+
+func (l *Logger) DPanic(v any, fields ...Field) {
+	if !l.lv.Enabled(DPanicLevel) {
+		return
+	}
+	l.l.DPanic(fmt.Sprint(v), injectFields(l.ctx, l.fn, fields...)...)
+}
+
+func (l *Logger) Panic(v any, fields ...Field) {
+	if !l.lv.Enabled(PanicLevel) {
+		return
+	}
+	l.l.Panic(fmt.Sprint(v), injectFields(l.ctx, l.fn, fields...)...)
+}
+
+func (l *Logger) Fatal(v any, fields ...Field) {
+	if !l.lv.Enabled(FatalLevel) {
+		return
+	}
+	l.l.Fatal(fmt.Sprint(v), injectFields(l.ctx, l.fn, fields...)...)
+}
+
+func (l *Logger) Debugf(template string, args ...any) {
+	if !l.lv.Enabled(DebugLevel) {
+		return
+	}
+	l.l.With(injectFields(l.ctx, l.fn)...).Sugar().Debugf(template, args...)
+}
+
+func (l *Logger) Infof(template string, args ...any) {
+	if !l.lv.Enabled(InfoLevel) {
+		return
+	}
+	l.l.With(injectFields(l.ctx, l.fn)...).Sugar().Infof(template, args...)
+}
+
+func (l *Logger) Warnf(template string, args ...any) {
+	if !l.lv.Enabled(WarnLevel) {
+		return
+	}
+	l.l.With(injectFields(l.ctx, l.fn)...).Sugar().Warnf(template, args...)
+}
+
+func (l *Logger) Errorf(template string, args ...any) {
+	if !l.lv.Enabled(ErrorLevel) {
+		return
+	}
+	l.l.With(injectFields(l.ctx, l.fn)...).Sugar().Errorf(template, args...)
+}
+
+func (l *Logger) DPanicf(template string, args ...any) {
+	if !l.lv.Enabled(DPanicLevel) {
+		return
+	}
+	l.l.With(injectFields(l.ctx, l.fn)...).Sugar().DPanicf(template, args...)
+}
+
+func (l *Logger) Panicf(template string, args ...any) {
+	if !l.lv.Enabled(PanicLevel) {
+		return
+	}
+	l.l.With(injectFields(l.ctx, l.fn)...).Sugar().Panicf(template, args...)
+}
+
+func (l *Logger) Fatalf(template string, args ...any) {
+	if !l.lv.Enabled(FatalLevel) {
+		return
+	}
+	l.l.With(injectFields(l.ctx, l.fn)...).Sugar().Fatalf(template, args...)
+}
+
+func injectFields(ctx context.Context, vs []Valuer, fd ...Field) []Field {
+	var fields []Field
+
+	switch {
+	case len(vs) == 0 && len(fd) == 0:
+		// do nothing
+	case len(vs) > 0 && len(fd) > 0:
+		fields = make([]Field, 0, len(vs)+len(fd))
+		for _, f := range vs {
+			fields = append(fields, f(ctx))
+		}
+		for _, v := range fd {
+			fields = append(fields, v)
+		}
+	case len(vs) > 0:
+		fields = make([]Field, 0, len(vs))
+		for _, f := range vs {
+			fields = append(fields, f(ctx))
+		}
+	default: // len(fd) > 0
+		fields = fd
+	}
+	return fields
 }

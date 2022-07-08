@@ -27,3 +27,14 @@ func Development() Option {
 		l.development = true
 	})
 }
+
+func WithDefaultValuer(vs ...Valuer) Option {
+	return optionFunc(func(l *Logger) {
+		if len(vs) > 0 {
+			fn := make([]Valuer, 0, len(vs)+len(l.fn))
+			fn = append(fn, l.fn...)
+			fn = append(fn, vs...)
+			l.fn = fn
+		}
+	})
+}
