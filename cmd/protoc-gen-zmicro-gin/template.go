@@ -10,9 +10,15 @@ var httpTemplate = `
 {{$svrType := .ServiceType}}
 {{$svrName := .ServiceName}}
 {{$useCustomResp := .UseCustomResponse}}
+{{$rpcMode := .RpcMode}}
+{{$allowFromAPI := .AllowFromAPI}}
 type {{$svrType}}HTTPServer interface {
 {{- range .MethodSets}}
+{{- if eq $rpcMode "rpcx"}}
 	{{.Name}}(context.Context, *{{.Request}}, *{{.Reply}}) error
+{{- else}}
+	{{.Name}}(context.Context, *{{.Request}}) (*{{.Reply}}, error)
+{{- end}}
 {{- end}}
     Validate(context.Context, any) error
 	ErrorEncoder(c *gin.Context, err error, isBadRequest bool)
@@ -24,9 +30,15 @@ type {{$svrType}}HTTPServer interface {
 type Unimplemented{{$svrType}}HTTPServer struct {}
 
 {{- range .MethodSets}}
-func (*Unimplemented{{$svrType}}HTTPServer) {{.Name}}(context.Context, *{{.Request}}, *{{.Reply}},) error {
+{{- if eq $rpcMode "rpcx"}}
+func (*Unimplemented{{$svrType}}HTTPServer) {{.Name}}(context.Context, *{{.Request}}, *{{.Reply}}) error {
 	return errors.New("method {{.Name}} not implemented")
 }
+{{- else}}
+func (*Unimplemented{{$svrType}}HTTPServer) {{.Name}}(context.Context, *{{.Request}}) (*{{.Reply}}, error) {
+	return nil, errors.New("method {{.Name}} not implemented")
+}
+{{- end}}
 {{- end}}
 func (*Unimplemented{{$svrType}}HTTPServer) Validate(context.Context, any) error { return nil }
 func (*Unimplemented{{$svrType}}HTTPServer) ErrorEncoder(c *gin.Context, err error, isBadRequest bool) {
@@ -77,25 +89,95 @@ func _{{$svrType}}_{{.Name}}{{.Num}}_HTTP_Handler(srv {{$svrType}}HTTPServer) gi
 			return srv.Validate(c.Request.Context(), req)
 		}
 
+		var err error
 		var req {{.Request}}
+		{{- if eq $rpcMode "rpcx"}}
 		var rsp {{.Reply}}
-		if err := shouldBind(&req); err != nil {
+		{{- else}}
+		var rsp *{{.Reply}}
+		{{- end}}
+		if err = shouldBind(&req); err != nil {
 			srv.ErrorEncoder(c, err, true)
 			return
 		}
-		err := srv.{{.Name}}(c.Request.Context(), &req, &rsp)
+		{{- if eq $rpcMode "rpcx"}}
+		err = srv.{{.Name}}(c.Request.Context(), &req, &rsp)
+		{{- else}}
+		rsp, err = srv.{{.Name}}(c.Request.Context(), &req)
+		{{- end}}
 		if err != nil {
 			srv.ErrorEncoder(c, err, false)
 			return
 		}
+		{{- if eq $rpcMode "rpcx"}}
+		{{- if $useCustomResp}}
+		srv.ResponseEncoder(c, &rsp)
+		{{- else}}
+		c.JSON(200, &rsp)
+		{{- end}}
+		{{- else}}
 		{{- if $useCustomResp}}
 		srv.ResponseEncoder(c, rsp)
 		{{- else}}
 		c.JSON(200, rsp)		
 		{{- end}}
+		{{- end}}
 	}
 }
 {{end}}
+
+{{- if $allowFromAPI}}
+type From{{$svrType}}HTTPServer interface {
+{{- range .MethodSets}}
+{{- if eq $rpcMode "rpcx"}}
+	{{.Name}}(context.Context, *{{.Request}}) (*{{.Reply}}, error)
+{{- else}}
+	{{.Name}}(context.Context, *{{.Request}}, *{{.Reply}}) error
+{{- end}}
+{{- end}}
+    Validate(context.Context, any) error
+	ErrorEncoder(c *gin.Context, err error, isBadRequest bool)
+{{- if $useCustomResp}}
+	ResponseEncoder(c *gin.Context, v any)
+{{- end}}
+}
+
+type From{{$svrType}} struct {
+	From{{$svrType}}HTTPServer
+}
+
+func NewFrom{{$svrType}}HTTPServer(from From{{$svrType}}HTTPServer) {{$svrType}}HTTPServer {
+	return &From{{$svrType}}{from}
+}
+
+{{- range .MethodSets}}
+{{- if eq $rpcMode "rpcx"}}
+func (f *From{{$svrType}}) {{.Name}}(ctx context.Context, req *{{.Request}}, rsp *{{.Reply}}) error {
+	result, err := f.From{{$svrType}}HTTPServer.{{.Name}}(ctx, req)
+	if err != nil {
+		return err
+	}
+	if result == nil {
+		*rsp = {{.Reply}}{}
+	} else {
+		*rsp = *result
+	}
+	return nil
+}
+{{- else}}
+func (f *From{{$svrType}}) {{.Name}}(ctx context.Context, req *{{.Request}}) (*{{.Reply}}, error) {
+	var err error 
+	var rsp {{.Reply}}
+
+	err = f.From{{$svrType}}HTTPServer.{{.Name}}(ctx, req, &rsp)
+	if err != nil {
+		return nil, err
+	}
+	return &rsp, nil
+}
+{{- end}}
+{{- end}}
+{{- end}}
 `
 
 type serviceDesc struct {
@@ -106,6 +188,8 @@ type serviceDesc struct {
 	MethodSets  map[string]*methodDesc
 
 	UseCustomResponse bool
+	RpcMode           string
+	AllowFromAPI      bool
 }
 
 type methodDesc struct {

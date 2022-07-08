@@ -15,6 +15,8 @@ var omitempty = flag.Bool("omitempty", true, "omit if google.api is empty")
 var allowDeleteBody = flag.Bool("allow_delete_body", false, "allow delete body")
 var allowEmptyPatchBody = flag.Bool("allow_empty_patch_body", false, "allow empty patch body")
 var useCustomResponse = flag.Bool("use_custom_response", false, "use custom response encoder")
+var rpcMode = flag.String("rpc_mode", "rpcx", "rpc mode, default use rpcx rpc, options: rpcx,official")
+var allowFromAPI = flag.Bool("allow_from_api", false, "allow from api can convert different api format.")
 
 func main() {
 	flag.Parse()

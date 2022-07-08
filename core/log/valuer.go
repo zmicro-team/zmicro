@@ -509,7 +509,7 @@ func ImmutAny(key string, v any) Valuer {
 func caller(depth int) (file string, line int) {
 	d := depth
 	_, file, line, _ = runtime.Caller(d)
-	if strings.LastIndex(file, "/log/logger.go") > 0 {
+	if strings.LastIndex(file, "/log/log.go") > 0 {
 		d++
 		_, file, line, _ = runtime.Caller(d)
 	}
