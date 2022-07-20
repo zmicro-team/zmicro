@@ -256,24 +256,15 @@ func (l *Logger) Fatalf(template string, args ...any) {
 func injectFields(ctx context.Context, vs []Valuer, fd ...Field) []Field {
 	var fields []Field
 
-	switch {
-	case len(vs) == 0 && len(fd) == 0:
-		// do nothing
-	case len(vs) > 0 && len(fd) > 0:
-		fields = make([]Field, 0, len(vs)+len(fd))
-		for _, f := range vs {
-			fields = append(fields, f(ctx))
-		}
-		for _, v := range fd {
-			fields = append(fields, v)
-		}
-	case len(vs) > 0:
-		fields = make([]Field, 0, len(vs))
-		for _, f := range vs {
-			fields = append(fields, f(ctx))
-		}
-	default: // len(fd) > 0
-		fields = fd
+	if len(vs) == 0 && len(fd) == 0 {
+		return nil
+	}
+	fields = make([]Field, 0, len(vs)+len(fd))
+	for _, f := range vs {
+		fields = append(fields, f(ctx))
+	}
+	for _, v := range fd {
+		fields = append(fields, v)
 	}
 	return fields
 }
