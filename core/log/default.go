@@ -7,14 +7,15 @@ import (
 var defaultLogger = New(os.Stderr, InfoLevel, WithCaller(true))
 
 var (
-	GetLogger   = defaultLogger.Logger
-	SetLevel    = defaultLogger.SetLevel
-	Enabled     = defaultLogger.Enabled
-	V           = defaultLogger.V
-	WithValuer  = defaultLogger.WithValuer
-	WithContext = defaultLogger.WithContext
-	With        = defaultLogger.With
-	Named       = defaultLogger.Named
+	GetLogger     = defaultLogger.Logger
+	SetLevel      = defaultLogger.SetLevel
+	Enabled       = defaultLogger.Enabled
+	V             = defaultLogger.V
+	WithNewValuer = defaultLogger.WithNewValuer
+	WithValuer    = defaultLogger.WithValuer
+	WithContext   = defaultLogger.WithContext
+	With          = defaultLogger.With
+	Named         = defaultLogger.Named
 
 	Debug   = defaultLogger.Debug
 	Info    = defaultLogger.Info
