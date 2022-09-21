@@ -18,6 +18,13 @@ func WithMessage(s string) Option {
 		}
 	})
 }
+func WithDetail(s string) Option {
+	return optFunc(func(e *errors.Error) {
+		if s != "" {
+			e.Detail = s
+		}
+	})
+}
 func WithMetadata(k string, v string) Option {
 	return optFunc(func(e *errors.Error) {
 		if k != "" && v != "" {
@@ -34,11 +41,7 @@ func _apply(e *errors.Error, opts ...Option) {
 {{ range .Errors }}
 func Is{{.CamelValue}}(err error) bool {
 	e := errors.FromError(err)
-{{- if or (eq .Code 400) (eq .Code 500)}}
 	return e.Code == {{.Code}}
-{{- else}}
-	return e.Detail == {{.Name}}_{{.Value}}.String() && e.Code == {{.Code}} 
-{{- end}}
 }
 func Err{{.CamelValue}}({{if or (eq .Code 400) (eq .Code 500)}}detail string{{else}}message ...string{{end}}) *errors.Error {
 {{- if or (eq .Code 400) (eq .Code 500)}}
