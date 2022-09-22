@@ -7,8 +7,8 @@ import (
 	"time"
 
 	etcdServerPlugin "github.com/rpcxio/rpcx-etcd/serverplugin"
+	otelServerPlugin "github.com/rpcxio/rpcx-plugins/server/otel"
 	"github.com/smallnest/rpcx/server"
-	"github.com/smallnest/rpcx/serverplugin"
 	"go.opentelemetry.io/otel"
 
 	"github.com/zmicro-team/zmicro/core/log"
@@ -44,7 +44,7 @@ func (s *Server) Start() error {
 	a := l.Addr().String()
 	if s.opts.Tracing {
 		tracer := otel.Tracer("rpcx")
-		p := serverplugin.NewOpenTelemetryPlugin(tracer, nil)
+		p := otelServerPlugin.NewOpenTelemetryPlugin(tracer, nil)
 		s.server.Plugins.Add(p)
 	}
 	s.register(a)
