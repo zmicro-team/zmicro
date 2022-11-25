@@ -14,15 +14,21 @@ var httpTemplate = `
 {{$allowFromAPI := .AllowFromAPI}}
 type {{$svrType}}HTTPServer interface {
 {{- range .MethodSets}}
+{{- if .Comment}}
+	{{.Comment}}
+{{- end }}
 {{- if eq $rpcMode "rpcx"}}
 	{{.Name}}(context.Context, *{{.Request}}, *{{.Reply}}) error
 {{- else}}
 	{{.Name}}(context.Context, *{{.Request}}) (*{{.Reply}}, error)
 {{- end}}
 {{- end}}
+	// Validate the request.
     Validate(context.Context, any) error
+	// ErrorEncoder encode error response.
 	ErrorEncoder(c *gin.Context, err error, isBadRequest bool)
 {{- if $useCustomResp}}
+	// ResponseEncoder encode response.
 	ResponseEncoder(c *gin.Context, v any)
 {{- end}}
 }
@@ -129,6 +135,9 @@ func _{{$svrType}}_{{.Name}}{{.Num}}_HTTP_Handler(srv {{$svrType}}HTTPServer) gi
 {{- if $allowFromAPI}}
 type From{{$svrType}}HTTPServer interface {
 {{- range .MethodSets}}
+{{- if .Comment}}
+	{{.Comment}}
+{{- end }}
 {{- if eq $rpcMode "rpcx"}}
 	{{.Name}}(context.Context, *{{.Request}}) (*{{.Reply}}, error)
 {{- else}}
@@ -198,6 +207,7 @@ type methodDesc struct {
 	Num     int    // 方法号
 	Request string // 请求结构
 	Reply   string // 回复结构
+	Comment string // 方法注释
 	// http_rule
 	Path         string // 路径
 	Method       string // 方法
