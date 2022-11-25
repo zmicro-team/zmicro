@@ -106,9 +106,6 @@ func _{{$svrType}}_{{.Name}}{{.Num}}_HTTP_Handler(srv {{$svrType}}HTTPServer) gi
 			srv.ErrorEncoder(c, err, true)
 			return
 		}
-		{{- if .Comment}}
-			{{.Comment}}
-		{{- end }}
 		{{- if eq $rpcMode "rpcx"}}
 		err = srv.{{.Name}}(c.Request.Context(), &req, &rsp)
 		{{- else}}
