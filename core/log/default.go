@@ -36,6 +36,16 @@ var (
 func ResetDefault(l *Logger) {
 	defaultLogger = l
 
+	GetLogger = defaultLogger.Logger
+	SetLevel = defaultLogger.SetLevel
+	Enabled = defaultLogger.Enabled
+	V = defaultLogger.V
+	WithNewValuer = defaultLogger.WithNewValuer
+	WithValuer = defaultLogger.WithValuer
+	WithContext = defaultLogger.WithContext
+	With = defaultLogger.With
+	Named = defaultLogger.Named
+
 	Debug = defaultLogger.Debug
 	Info = defaultLogger.Info
 	Warn = defaultLogger.Warn
@@ -50,8 +60,6 @@ func ResetDefault(l *Logger) {
 	DPanicf = defaultLogger.DPanicf
 	Panicf = defaultLogger.Panicf
 	Fatalf = defaultLogger.Fatalf
-
-	SetLevel = defaultLogger.SetLevel
 }
 
 func Sync() error {
