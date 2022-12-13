@@ -64,6 +64,7 @@ func Log() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
 		body = buf.String()
 		c.Request.Body = ioutil.NopCloser(&buf)
 		writer = &rspWriter{c.Writer, &bytes.Buffer{}}
@@ -91,7 +92,13 @@ func Log() gin.HandlerFunc {
 			fields = append(fields, zap.Duration("duration", duration))
 			fields = append(fields, zap.Any("req", map[string]interface{}{
 				"header": copyHeader(c.Request.Header),
-				"body":   body,
+				"body": func() interface{} {
+					if c.Request.MultipartForm != nil {
+						return "MultipartForm File"
+					} else {
+						return body
+					}
+				}(),
 			}))
 
 			if env.Get() == env.Develop {
