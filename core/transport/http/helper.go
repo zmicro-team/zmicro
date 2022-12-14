@@ -38,6 +38,10 @@ func (*Implemented) Validate(ctx context.Context, v any) error {
 	return Validate(ctx, v)
 }
 
+func (*Implemented) ValidateMap(ctx context.Context, data map[string]interface{}, rules map[string]interface{}) map[string]interface{} {
+	return Validator().ValidateMapCtx(ctx, data, rules)
+}
+
 func (*Implemented) ErrorEncoder(c *gin.Context, err error, isBadRequest bool) {
 	ErrorEncoder(c, err, isBadRequest)
 }
