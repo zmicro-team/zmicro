@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/pluginpb"
 )
 
 const deprecationComment = "// Deprecated: Do not use."
@@ -22,6 +23,17 @@ var (
 )
 
 var methodSets = make(map[string]int)
+
+func runProtoGen(gen *protogen.Plugin) error {
+	gen.SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
+	for _, f := range gen.Files {
+		if !f.Generate {
+			continue
+		}
+		generateFile(gen, f, *omitempty)
+	}
+	return nil
+}
 
 // generateFile generates a .gin.pb.go file.
 func generateFile(gen *protogen.Plugin, file *protogen.File, omitempty bool) *protogen.GeneratedFile {
@@ -104,8 +116,13 @@ func genService(gen *protogen.Plugin, file *protogen.File,
 			sd.Methods = append(sd.Methods, buildMethodDesc(g, method, "POST", path))
 		}
 	}
-	if len(sd.Methods) != 0 {
-		g.P(sd.execute())
+	if len(sd.Methods) == 0 {
+		return
+	}
+	err := sd.execute(g)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr,
+			"\u001B[31mWARN\u001B[m: execute template failed.\n")
 	}
 }
 

@@ -3,19 +3,36 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"unicode"
 
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/pluginpb"
 
 	"github.com/zmicro-team/zmicro/core/errors"
+	"github.com/zmicro-team/zmicro/core/log"
 )
 
 const (
 	fmtPackage = protogen.GoImportPath("fmt")
 )
+
+func runPortoGen(gen *protogen.Plugin) error {
+	if *errorsPackage == "" {
+		log.Fatal("errors package import path must be give with '--zmicro-errno_out=epk=xxx'")
+	}
+	gen.SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
+	for _, f := range gen.Files {
+		if !f.Generate {
+			continue
+		}
+		generateFile(gen, f)
+	}
+	return nil
+}
 
 // generateFile generates a _error.pb.go file containing errors definitions.
 func generateFile(gen *protogen.Plugin, file *protogen.File) *protogen.GeneratedFile {
@@ -113,7 +130,11 @@ func genErrorsDetail(gen *protogen.Plugin, file *protogen.File, g *protogen.Gene
 	if len(ew.Errors) == 0 {
 		return true
 	}
-	g.P(ew.execute())
+	err := ew.execute(g)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr,
+			"\u001B[31mWARN\u001B[m: execute template failed.\n")
+	}
 	return false
 }
 

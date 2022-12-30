@@ -2,10 +2,12 @@ package client
 
 import (
 	etcd_client "github.com/rpcxio/rpcx-etcd/client"
+	otelClient "github.com/rpcxio/rpcx-plugins/client/otel"
 	"github.com/smallnest/rpcx/client"
 	"github.com/smallnest/rpcx/protocol"
-	"github.com/zmicro-team/zmicro/core/log"
 	"go.opentelemetry.io/otel"
+
+	"github.com/zmicro-team/zmicro/core/log"
 )
 
 type Client struct {
@@ -53,7 +55,7 @@ func NewClient(opts ...Option) (*Client, error) {
 
 	if c.opts.Tracing {
 		tracer := otel.Tracer("rpcx")
-		p := client.NewOpenTelemetryPlugin(tracer, nil)
+		p := otelClient.NewOpenTelemetryPlugin(tracer, nil)
 		pc := client.NewPluginContainer()
 		pc.Add(p)
 		c.xClient.SetPlugins(pc)
