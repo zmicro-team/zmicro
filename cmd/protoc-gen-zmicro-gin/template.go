@@ -36,8 +36,8 @@ type methodDesc struct {
 	Method       string // 方法
 	HasVars      bool   // 是否有url参数
 	HasBody      bool   // 是否有消息体
-	Body         string // 消息体
-	ResponseBody string //
+	Body         string // 请求消息体
+	ResponseBody string // 回复消息体
 }
 
 func (s *serviceDesc) execute(w io.Writer) error {
