@@ -22,6 +22,7 @@ type serviceDesc struct {
 	UseCustomResponse bool
 	RpcMode           string
 	AllowFromAPI      bool
+	UseEncoding       bool
 }
 
 type methodDesc struct {
