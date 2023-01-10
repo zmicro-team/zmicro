@@ -36,9 +36,12 @@ func BindQuery(c *gin.Context, v any) error {
 func BindUri(c *gin.Context, v any) error {
 	return globalEncoding.BindUri(c.Request, v)
 }
-func Render(c *gin.Context, statusCode int, v any) error {
+func Render(c *gin.Context, statusCode int, v any) {
 	c.Writer.WriteHeader(statusCode)
-	return globalEncoding.Render(c.Writer, c.Request, v)
+	err := globalEncoding.Render(c.Writer, c.Request, v)
+	if err != nil {
+		c.String(500, "Render failed cause by %v", err)
+	}
 }
 
 func RequestWithUri(req *http.Request, params gin.Params) *http.Request {
