@@ -29,29 +29,29 @@ func (*Codec) ContentType(_ interface{}) string {
 	return "application/json; charset=utf-8"
 }
 
-func (j *Codec) Marshal(v interface{}) ([]byte, error) {
+func (c *Codec) Marshal(v interface{}) ([]byte, error) {
 	if _, ok := v.(proto.Message); !ok {
-		return j.marshalNonProtoField(v)
+		return c.marshalNonProtoField(v)
 	}
 
 	var buf bytes.Buffer
-	if err := j.marshalTo(&buf, v); err != nil {
+	if err := c.marshalTo(&buf, v); err != nil {
 		return nil, err
 	}
 	return buf.Bytes(), nil
 }
 
-func (j *Codec) marshalTo(w io.Writer, v interface{}) error {
+func (c *Codec) marshalTo(w io.Writer, v interface{}) error {
 	p, ok := v.(proto.Message)
 	if !ok {
-		buf, err := j.marshalNonProtoField(v)
+		buf, err := c.marshalNonProtoField(v)
 		if err != nil {
 			return err
 		}
 		_, err = w.Write(buf)
 		return err
 	}
-	b, err := j.MarshalOptions.Marshal(p)
+	b, err := c.MarshalOptions.Marshal(p)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ var (
 // it is only capable of marshaling non-message field values of protobuf,
 // i.e. primitive types, enums; pointers to primitives or enums; maps from
 // integer/string types to primitives/enums/pointers to messages.
-func (j *Codec) marshalNonProtoField(v interface{}) ([]byte, error) {
+func (c *Codec) marshalNonProtoField(v interface{}) ([]byte, error) {
 	if v == nil {
 		return []byte("null"), nil
 	}
@@ -84,7 +84,7 @@ func (j *Codec) marshalNonProtoField(v interface{}) ([]byte, error) {
 
 	if rv.Kind() == reflect.Slice {
 		if rv.IsNil() {
-			if j.EmitUnpopulated {
+			if c.EmitUnpopulated {
 				return []byte("[]"), nil
 			}
 			return []byte("null"), nil
@@ -103,7 +103,7 @@ func (j *Codec) marshalNonProtoField(v interface{}) ([]byte, error) {
 						return nil, err
 					}
 				}
-				if err = j.marshalTo(&buf, rv.Index(i).Interface().(proto.Message)); err != nil {
+				if err = c.marshalTo(&buf, rv.Index(i).Interface().(proto.Message)); err != nil {
 					return nil, err
 				}
 			}
@@ -128,7 +128,7 @@ func (j *Codec) marshalNonProtoField(v interface{}) ([]byte, error) {
 						return nil, err
 					}
 				}
-				if j.UseEnumNumbers {
+				if c.UseEnumNumbers {
 					_, err = buf.WriteString(strconv.FormatInt(rv.Index(i).Int(), 10))
 				} else {
 					_, err = buf.WriteString("\"" + rv.Index(i).Interface().(protoEnum).String() + "\"")
@@ -149,34 +149,34 @@ func (j *Codec) marshalNonProtoField(v interface{}) ([]byte, error) {
 	if rv.Kind() == reflect.Map {
 		m := make(map[string]*json.RawMessage)
 		for _, k := range rv.MapKeys() {
-			buf, err := j.Marshal(rv.MapIndex(k).Interface())
+			buf, err := c.Marshal(rv.MapIndex(k).Interface())
 			if err != nil {
 				return nil, err
 			}
 			m[fmt.Sprintf("%v", k.Interface())] = (*json.RawMessage)(&buf)
 		}
-		if j.Indent != "" {
-			return json.MarshalIndent(m, "", j.Indent)
+		if c.Indent != "" {
+			return json.MarshalIndent(m, "", c.Indent)
 		}
 		return json.Marshal(m)
 	}
-	if enum, ok := rv.Interface().(protoEnum); ok && !j.UseEnumNumbers {
+	if enum, ok := rv.Interface().(protoEnum); ok && !c.UseEnumNumbers {
 		return json.Marshal(enum.String())
 	}
 	return json.Marshal(rv.Interface())
 }
 
 // Unmarshal unmarshals JSON "data" into "v"
-func (j *Codec) Unmarshal(data []byte, v interface{}) error {
-	return unmarshalJSONPb(data, j.UnmarshalOptions, v)
+func (c *Codec) Unmarshal(data []byte, v interface{}) error {
+	return unmarshalJSONPb(data, c.UnmarshalOptions, v)
 }
 
 // NewDecoder returns a Decoder which reads JSON stream from "r".
-func (j *Codec) NewDecoder(r io.Reader) codec.Decoder {
+func (c *Codec) NewDecoder(r io.Reader) codec.Decoder {
 	d := json.NewDecoder(r)
 	return DecoderWrapper{
 		Decoder:          d,
-		UnmarshalOptions: j.UnmarshalOptions,
+		UnmarshalOptions: c.UnmarshalOptions,
 	}
 }
 
@@ -194,14 +194,14 @@ func (d DecoderWrapper) Decode(v interface{}) error {
 }
 
 // NewEncoder returns an Encoder which writes JSON stream into "w".
-func (j *Codec) NewEncoder(w io.Writer) codec.Encoder {
+func (c *Codec) NewEncoder(w io.Writer) codec.Encoder {
 	return codec.EncoderFunc(func(v interface{}) error {
-		if err := j.marshalTo(w, v); err != nil {
+		if err := c.marshalTo(w, v); err != nil {
 			return err
 		}
 		// mimic json.Encoder by adding a newline (makes output
 		// easier to read when it contains multiple encoded items)
-		_, err := w.Write(j.Delimiter())
+		_, err := w.Write(c.Delimiter())
 		return err
 	})
 }
@@ -336,7 +336,7 @@ var typeProtoEnum = reflect.TypeOf((*protoEnum)(nil)).Elem()
 var typeProtoMessage = reflect.TypeOf((*proto.Message)(nil)).Elem()
 
 // Delimiter for newline encoded JSON streams.
-func (j *Codec) Delimiter() []byte {
+func (c *Codec) Delimiter() []byte {
 	return []byte("\n")
 }
 
