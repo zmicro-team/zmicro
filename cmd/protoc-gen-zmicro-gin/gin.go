@@ -20,7 +20,7 @@ var (
 	errorsPackage        = protogen.GoImportPath("errors")
 	contextPackage       = protogen.GoImportPath("context")
 	ginPackage           = protogen.GoImportPath("github.com/gin-gonic/gin")
-	transportHttpPackage = protogen.GoImportPath("github.com/zmicro-team/zmicro/core/http")
+	transportHttpPackage = protogen.GoImportPath("github.com/zmicro-team/zmicro/core/transport/http")
 )
 
 var methodSets = make(map[string]int)
