@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mime"
 	"net/http"
+	"strings"
 
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -168,16 +169,19 @@ func (r *Encoding) InboundForRequest(req *http.Request) (string, codec.Marshaler
 // Otherwise, it follows the above logic for "*" Marshaler.
 func (r *Encoding) OutboundForRequest(req *http.Request) codec.Marshaler {
 	var marshaler codec.Marshaler
-
 	for _, acceptVal := range req.Header[acceptHeader] {
-		if m, ok := r.mimeMap[acceptVal]; ok {
-			marshaler = m
-			break
+		headerValues := parseAcceptHeader(acceptVal)
+		for _, value := range headerValues {
+			if m, ok := r.mimeMap[value]; ok {
+				marshaler = m
+				break
+			}
 		}
 	}
 	if marshaler == nil {
 		marshaler = r.mimeMap[MIMEWildcard]
 	}
+
 	return marshaler
 }
 
@@ -255,4 +259,12 @@ func (r *Encoding) Render(w http.ResponseWriter, req *http.Request, v any) error
 	w.Header().Set("Content-Type", marshaller.ContentType(v))
 	_, err = w.Write(data)
 	return err
+}
+
+func parseAcceptHeader(header string) []string {
+	values := strings.Split(header, ",")
+	for i := 0; i < len(values); i++ {
+		values[i] = strings.TrimSpace(values[i])
+	}
+	return values
 }
