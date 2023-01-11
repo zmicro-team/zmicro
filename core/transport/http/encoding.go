@@ -5,12 +5,31 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/zmicro-team/zmicro/core/encoding"
 	"github.com/zmicro-team/zmicro/core/encoding/codec"
+	"github.com/zmicro-team/zmicro/core/encoding/jsonpb"
 )
 
-var globalEncoding = encoding.New()
+var globalEncoding = func() *encoding.Encoding {
+	e := encoding.New()
+	err := e.Register(encoding.MIMEJSON, &Codec{
+		Marshaler: &jsonpb.Codec{
+			MarshalOptions: protojson.MarshalOptions{
+				UseProtoNames:  true,
+				UseEnumNumbers: true,
+			},
+			UnmarshalOptions: protojson.UnmarshalOptions{
+				DiscardUnknown: true,
+			},
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+	return e
+}()
 
 func RegisterMarshaler(mime string, marshaler codec.Marshaler) error {
 	return globalEncoding.Register(mime, marshaler)

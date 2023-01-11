@@ -660,3 +660,29 @@ func TestEncoding_Render(t *testing.T) {
 		})
 	}
 }
+
+func TestParseAcceptHeader(t *testing.T) {
+	tests := []struct {
+		name   string
+		header string
+		want   []string
+	}{
+		{
+			"",
+			"application/json, text/plain, */*",
+			[]string{"application/json", "text/plain", "*/*"},
+		},
+		{
+			"",
+			"application/json,text/plain,   */*",
+			[]string{"application/json", "text/plain", "*/*"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := parseAcceptHeader(tt.header); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("parseAcceptHeader() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
