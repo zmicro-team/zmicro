@@ -13,15 +13,28 @@ type {{$svrType}}HTTPServer interface {
 	{{.Name}}(context.Context, *{{.Request}}) (*{{.Reply}}, error)
 {{- end}}
 {{- end}}
-{{- if not $useEncoding}}
 	// Validate the request.
     Validate(context.Context, any) error
-{{- end}}
 	// ErrorEncoder encode error response.
 	ErrorEncoder(c *gin.Context, err error, isBadRequest bool)
+{{- if $useEncoding}}
+    // Bind checks the Method and Content-Type to select codec.Marshaler automatically,
+    // Depending on the "Content-Type" header different bind are used.
+    Bind(c *gin.Context, v any) error
+    // BindQuery binds the passed struct pointer using the query codec.Marshaler.
+    BindQuery(c *gin.Context, v any) error
+    // BindUri binds the passed struct pointer using the uri codec.Marshaler.
+    // NOTE: before use this, you should set uri params in the request context with RequestWithUri.
+    BindUri(c *gin.Context, v any) error
+    // RequestWithUri sets the URL params for the given request.
+    RequestWithUri(req *http.Request, params gin.Params) *http.Request
+    // Render encode response.
+    Render(c *gin.Context, v any)
+{{- else}}
 {{- if $useCustomResp}}
-	// ResponseEncoder encode response.
-	ResponseEncoder(c *gin.Context, v any)
+	// Render encode response.
+	Render(c *gin.Context, v any)
+{{- end}}
 {{- end}}
 }
 
@@ -38,9 +51,7 @@ func (*Unimplemented{{$svrType}}HTTPServer) {{.Name}}(context.Context, *{{.Reque
 }
 {{- end}}
 {{- end}}
-{{- if not $useEncoding}}
 func (*Unimplemented{{$svrType}}HTTPServer) Validate(context.Context, any) error { return nil }
-{{- end}}
 func (*Unimplemented{{$svrType}}HTTPServer) ErrorEncoder(c *gin.Context, err error, isBadRequest bool) {
 	var code = 500
 	if isBadRequest {
@@ -48,10 +59,28 @@ func (*Unimplemented{{$svrType}}HTTPServer) ErrorEncoder(c *gin.Context, err err
 	}
 	c.String(code, err.Error())
 }
+{{- if $useEncoding}}
+func (*Unimplemented{{$svrType}}HTTPServer) Bind(c *gin.Context, v any) error {
+    return c.ShouldBind(v)
+}
+func (*Unimplemented{{$svrType}}HTTPServer) BindQuery(c *gin.Context, v any) error {
+    return c.ShouldBindQuery(v)
+}
+func (*Unimplemented{{$svrType}}HTTPServer) BindUri(c *gin.Context, v any) error {
+    return c.ShouldBindUri(v)
+}
+func (*Unimplemented{{$svrType}}HTTPServer) RequestWithUri(req *http.Request, _ gin.Params) *http.Request {
+    return req
+}
+func (*Unimplemented{{$svrType}}HTTPServer) Render(c *gin.Context, v any) {
+    c.JSON(200, v)
+}
+{{- else}}
 {{- if $useCustomResp}}
-func (*Unimplemented{{$svrType}}HTTPServer) ResponseEncoder(c *gin.Context, v any) {
+func (*Unimplemented{{$svrType}}HTTPServer) Render(c *gin.Context, v any) {
 	c.JSON(200, v)
 }
+{{- end}}
 {{- end}}
 
 func Register{{$svrType}}HTTPServer(g *gin.RouterGroup, srv {{$svrType}}HTTPServer) {
@@ -65,32 +94,31 @@ func Register{{$svrType}}HTTPServer(g *gin.RouterGroup, srv {{$svrType}}HTTPServ
 func _{{$svrType}}_{{.Name}}{{.Num}}_HTTP_Handler(srv {{$svrType}}HTTPServer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		{{- if and $useEncoding .HasVars}}
-		c.Request = http.RequestWithUri(c.Request, c.Params)
+		c.Request = srv.RequestWithUri(c.Request, c.Params)
 		{{- end}}
 		shouldBind := func(req *{{.Request}}) error {
 		    {{- if $useEncoding}}
 		    {{- if .HasBody}}
-			if err := http.Bind(c, req{{.Body}}); err != nil {
+			if err := srv.Bind(c, req{{.Body}}); err != nil {
 				return err
 			}
 			{{- if not (eq .Body "")}}
-			if err := http.BindQuery(c, req); err != nil {
+			if err := srv.BindQuery(c, req); err != nil {
 				return err
 			}
 			{{- end}}
 			{{- else}}
 			{{- if not (eq .Method "PATCH")}}
-			if err := http.BindQuery(c, req{{.Body}}); err != nil {
+			if err := srv.BindQuery(c, req{{.Body}}); err != nil {
 				return err
 			}
 			{{- end}}
 			{{- end}}
 			{{- if .HasVars}}
-			if err := http.BindUri(c, req); err != nil {
+			if err := srv.BindUri(c, req); err != nil {
 				return err
 			}
 			{{- end}}
-			return http.Validate(c.Request.Context(), req)
 		    {{- else}}
 			{{- if .HasBody}}
 			if err := c.ShouldBind(req{{.Body}}); err != nil {
@@ -113,8 +141,8 @@ func _{{$svrType}}_{{.Name}}{{.Num}}_HTTP_Handler(srv {{$svrType}}HTTPServer) gi
 				return err
 			}
 			{{- end}}
-			return srv.Validate(c.Request.Context(), req)
 			{{- end}}
+			return srv.Validate(c.Request.Context(), req)
 		}
 
 		var err error
@@ -134,15 +162,11 @@ func _{{$svrType}}_{{.Name}}{{.Num}}_HTTP_Handler(srv {{$svrType}}HTTPServer) gi
 			srv.ErrorEncoder(c, err, false)
 			return
 		}
-		{{- if $useCustomResp}}
-		srv.ResponseEncoder(c, rsp{{.ResponseBody}})
-		{{- else}}
-	    {{- if $useEncoding}}
-	    http.Render(c, 200, rsp{{.ResponseBody}})
+		{{- if or $useEncoding $useCustomResp}}
+		srv.Render(c, rsp{{.ResponseBody}})
         {{- else}}
-		c.JSON(200, rsp{{.ResponseBody}})
-		{{- end}}
-		{{- end}}
+        c.JSON(200, rsp{{.ResponseBody}})
+        {{- end}}
 	}
 }
 {{end}}
@@ -157,12 +181,26 @@ type From{{$svrType}}HTTPServer interface {
 	{{.Name}}(context.Context, *{{.Request}}, *{{.Reply}}) error
 {{- end}}
 {{- end}}
-{{- if not $useEncoding}}
     Validate(context.Context, any) error
-{{- end}}
 	ErrorEncoder(c *gin.Context, err error, isBadRequest bool)
+{{- if $useEncoding}}
+    // Bind checks the Method and Content-Type to select codec.Marshaler automatically,
+    // Depending on the "Content-Type" header different bind are used.
+    Bind(c *gin.Context, v any) error
+    // BindQuery binds the passed struct pointer using the query codec.Marshaler.
+    BindQuery(c *gin.Context, v any) error
+    // BindUri binds the passed struct pointer using the uri codec.Marshaler.
+    // NOTE: before use this, you should set uri params in the request context with RequestWithUri.
+    BindUri(c *gin.Context, v any) error
+    // RequestWithUri sets the URL params for the given request.
+    RequestWithUri(req *http.Request, params gin.Params) *http.Request
+    // Render encode response.
+    Render(c *gin.Context, v any)
+{{- else}}
 {{- if $useCustomResp}}
-	ResponseEncoder(c *gin.Context, v any)
+	// Render encode response.
+	Render(c *gin.Context, v any)
+{{- end}}
 {{- end}}
 }
 

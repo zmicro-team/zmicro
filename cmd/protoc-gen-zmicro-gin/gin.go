@@ -17,10 +17,10 @@ import (
 const deprecationComment = "// Deprecated: Do not use."
 
 var (
-	errorsPackage        = protogen.GoImportPath("errors")
-	contextPackage       = protogen.GoImportPath("context")
-	ginPackage           = protogen.GoImportPath("github.com/gin-gonic/gin")
-	transportHttpPackage = protogen.GoImportPath("github.com/zmicro-team/zmicro/core/transport/http")
+	errorsPackage  = protogen.GoImportPath("errors")
+	contextPackage = protogen.GoImportPath("context")
+	ginPackage     = protogen.GoImportPath("github.com/gin-gonic/gin")
+	netHttpPackage = protogen.GoImportPath("net/http")
 )
 
 var methodSets = make(map[string]int)
@@ -81,7 +81,7 @@ func generateFileContent(gen *protogen.Plugin, file *protogen.File, g *protogen.
 	g.P("var _ = ", contextPackage.Ident("TODO"))
 	g.P("var _ = ", ginPackage.Ident("New"))
 	if *useEncoding {
-		g.P("var _ = ", transportHttpPackage.Ident("Bind"))
+		g.P("var _ = ", netHttpPackage.Ident("HandleFunc"))
 	}
 	g.P()
 

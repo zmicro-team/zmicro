@@ -23,13 +23,14 @@ const defaultMemory = 32 << 20
 
 // Content-Type MIME of the most common data formats.
 const (
-	// MIMEWildcard is the fallback MIME type used for requests which do not match
-	// a registered MIME type.
-	MIMEWildcard = "*"
 	// MIMEURI is sepcial form query.
 	MIMEQuery = "__MIME__/QUERY"
 	// MIMEURI is sepcial form uri.
 	MIMEURI = "__MIME__/URI"
+
+	// MIMEWildcard is the fallback MIME type used for requests which do not match
+	// a registered MIME type.
+	MIMEWildcard = "*"
 
 	MIMEJSON              = "application/json"
 	MIMEHTML              = "text/html"
@@ -52,7 +53,9 @@ var (
 
 // Encoding is a mapping from MIME types to Marshalers.
 type Encoding struct {
-	mimeMap map[string]codec.Marshaler
+	mimeMap   map[string]codec.Marshaler
+	mimeQuery codec.FormMarshaler
+	mimeUri   codec.FormMarshaler
 }
 
 // New encoding with default Marshalers
@@ -70,8 +73,6 @@ func New() *Encoding {
 					},
 				},
 			},
-			MIMEQuery: &form.QueryCodec{Codec: form.New("json")},
-			MIMEURI:   &form.UriCodec{Codec: form.New("json")},
 
 			MIMEPOSTForm:          form.New("json"),
 			MIMEMultipartPOSTForm: &form.MultipartCodec{Codec: form.New("json")},
@@ -92,6 +93,8 @@ func New() *Encoding {
 			MIMEYAML:     &yaml.Codec{},
 			MIMETOML:     &toml.Codec{},
 		},
+		mimeQuery: &form.QueryCodec{Codec: form.New("json")},
+		mimeUri:   &form.UriCodec{Codec: form.New("json")},
 	}
 }
 
@@ -103,9 +106,24 @@ func (r *Encoding) Register(mime string, marshaler codec.Marshaler) error {
 		return errors.New("empty MIME type")
 	}
 	if marshaler == nil {
-		return errors.New("<nil> marshaller not allow")
+		return errors.New("marshaller should be not")
 	} else {
-		r.mimeMap[mime] = marshaler
+		switch mime {
+		case MIMEQuery:
+			m, ok := marshaler.(codec.FormMarshaler)
+			if !ok {
+				return errors.New("marshaller should be implement codec.FormMarshaler")
+			}
+			r.mimeQuery = m
+		case MIMEURI:
+			m, ok := marshaler.(codec.FormMarshaler)
+			if !ok {
+				return errors.New("marshaller should be implement codec.FormMarshaler")
+			}
+			r.mimeUri = m
+		default:
+			r.mimeMap[mime] = marshaler
+		}
 	}
 	return nil
 }
@@ -114,11 +132,18 @@ func (r *Encoding) Register(mime string, marshaler codec.Marshaler) error {
 // It checks the MIME type on the Encoding.
 // Otherwise, it follows the above logic for "*" Marshaler.
 func (r *Encoding) Get(mime string) codec.Marshaler {
-	m := r.mimeMap[mime]
-	if m == nil {
-		m = r.mimeMap[MIMEWildcard]
+	switch mime {
+	case MIMEQuery:
+		return r.mimeQuery
+	case MIMEURI:
+		return r.mimeUri
+	default:
+		m := r.mimeMap[mime]
+		if m == nil {
+			m = r.mimeMap[MIMEWildcard]
+		}
+		return m
 	}
-	return m
 }
 
 // Delete remove the MIME type marshaler.
@@ -169,6 +194,7 @@ func (r *Encoding) InboundForRequest(req *http.Request) (string, codec.Marshaler
 // Otherwise, it follows the above logic for "*" Marshaler.
 func (r *Encoding) OutboundForRequest(req *http.Request) codec.Marshaler {
 	var marshaler codec.Marshaler
+
 	for _, acceptVal := range req.Header[acceptHeader] {
 		headerValues := parseAcceptHeader(acceptVal)
 		for _, value := range headerValues {
@@ -181,7 +207,6 @@ func (r *Encoding) OutboundForRequest(req *http.Request) codec.Marshaler {
 	if marshaler == nil {
 		marshaler = r.mimeMap[MIMEWildcard]
 	}
-
 	return marshaler
 }
 
@@ -199,7 +224,7 @@ func (r *Encoding) Bind(req *http.Request, v any) error {
 	}
 	contentType, marshaller := r.InboundForRequest(req)
 	if contentType == MIMEMultipartPOSTForm {
-		m, ok := marshaller.(codec.FormMarshaler)
+		m, ok := marshaller.(codec.FormCodec)
 		if !ok {
 			return fmt.Errorf("not supported marshaller(%v)", contentType)
 		}
@@ -214,12 +239,7 @@ func (r *Encoding) Bind(req *http.Request, v any) error {
 
 // BindQuery binds the passed struct pointer using the query codec.Marshaler.
 func (r *Encoding) BindQuery(req *http.Request, v any) error {
-	marshaller := r.Get(MIMEQuery)
-	m, ok := marshaller.(codec.FormMarshaler)
-	if !ok {
-		return fmt.Errorf("not supported marshaller(%v)", MIMEQuery)
-	}
-	return m.Decode(req.URL.Query(), v)
+	return r.mimeQuery.Decode(req.URL.Query(), v)
 }
 
 // BindUri binds the passed struct pointer using the uri codec.Marshaler.
@@ -229,12 +249,7 @@ func (r *Encoding) BindUri(req *http.Request, v any) error {
 	if raws == nil {
 		return errors.New("must be request with uri in context")
 	}
-	marshaller := r.Get(MIMEURI)
-	m, ok := marshaller.(codec.FormMarshaler)
-	if !ok {
-		return fmt.Errorf("not supported marshaller(%v)", MIMEURI)
-	}
-	return m.Decode(raws, v)
+	return r.mimeUri.Decode(raws, v)
 }
 
 // Render writes the response headers and calls the outbound marshalers for this request.

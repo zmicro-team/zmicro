@@ -22,6 +22,18 @@ type Marshaler interface {
 	NewEncoder(w io.Writer) Encoder
 }
 
+// FormMarshaler defines a conversion between byte sequence and gRPC payloads / fields.
+type FormMarshaler interface {
+	Marshaler
+	FormCodec
+}
+
+// FormCodec encode or decode a url.values
+type FormCodec interface {
+	Encode(v any) (url.Values, error)
+	Decode(vs url.Values, v any) error
+}
+
 // Decoder decodes a byte sequence
 type Decoder interface {
 	Decode(v interface{}) error
@@ -43,8 +55,3 @@ type EncoderFunc func(v interface{}) error
 
 // Encode delegates invocations to the underlying function itself.
 func (f EncoderFunc) Encode(v interface{}) error { return f(v) }
-
-type FormMarshaler interface {
-	Encode(v any) (url.Values, error)
-	Decode(vs url.Values, v any) error
-}
