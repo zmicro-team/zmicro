@@ -16,7 +16,7 @@ require (
 	github.com/rpcxio/rpcx-plugins v0.0.0-20220730073026-120f5ed14272
 	github.com/smallnest/rpcx v1.7.15
 	github.com/spf13/cast v1.5.0
-	github.com/spf13/viper v1.13.0
+	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
 	github.com/swaggo/gin-swagger v1.5.3
