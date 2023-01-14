@@ -10,7 +10,7 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.9
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.0
 	github.com/pelletier/go-toml/v2 v2.0.6
 	github.com/rpcxio/rpcx-etcd v0.2.0
 	github.com/rpcxio/rpcx-plugins v0.0.0-20220730073026-120f5ed14272
