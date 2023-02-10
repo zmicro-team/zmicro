@@ -112,7 +112,7 @@ func intoEnums(protoEnums []*protogen.Enum) []*Enum {
 				Number:     int(v.Desc.Number()),
 				CamelValue: CamelCase(string(v.Desc.Name())),
 				Mapping:    mappingValue,
-				Comment:    strings.TrimRight(string(v.Comments.Leading), "\n"),
+				Comment:    strings.TrimSuffix(string(v.Comments.Leading), "\n"),
 			})
 			eValueMp[v.Desc.Index()] = mappingValue
 		}

@@ -250,7 +250,7 @@ func buildMethodDesc(g *protogen.GeneratedFile, m *protogen.Method, method, path
 	}
 	comment := m.Comments.Leading.String() + m.Comments.Trailing.String()
 	if comment != "" {
-		comment = strings.TrimLeft(strings.TrimRight(comment, "\n"), "//") // nolint
+		comment = strings.TrimPrefix(strings.TrimSuffix(comment, "\n"), "//") // nolint
 		comment = "// " + m.GoName + comment
 	} else {
 		comment = "// " + m.GoName + " ..."
@@ -281,7 +281,7 @@ func transformPathParams(path string) string {
 func buildPathVars(_ *protogen.Method, path string) (res []string) {
 	for _, v := range strings.Split(path, "/") {
 		if strings.HasPrefix(v, "{") && strings.HasSuffix(v, "}") {
-			res = append(res, strings.TrimRight(strings.TrimLeft(v, "{"), "}"))
+			res = append(res, strings.TrimSuffix(strings.TrimPrefix(v, "{"), "}"))
 		}
 	}
 	return
