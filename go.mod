@@ -29,7 +29,7 @@ require (
 	go.uber.org/zap v1.24.0
 	google.golang.org/genproto v0.0.0-20230106154932-a12b697841d9
 	google.golang.org/protobuf v1.28.1
-	gopkg.in/natefinch/lumberjack.v2 v2.0.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
