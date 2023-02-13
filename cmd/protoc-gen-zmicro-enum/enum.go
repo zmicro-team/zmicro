@@ -41,7 +41,8 @@ func runProtoGen(gen *protogen.Plugin) error {
 		if !f.Generate {
 			continue
 		}
-		enums := intoEnums(f.Enums)
+		enums := intoEnums("", f.Enums)
+		enums = append(enums, intoEnumsFromMessage("", f.Messages)...)
 		if len(enums) == 0 {
 			continue
 		}
@@ -88,8 +89,22 @@ func protocVersion(gen *protogen.Plugin) string {
 	return fmt.Sprintf("v%d.%d.%d%s", v.GetMajor(), v.GetMinor(), v.GetPatch(), suffix)
 }
 
+// intoEnumsFromMessage generates the errors definitions, excluding the package statement.
+func intoEnumsFromMessage(nestedMessageName string, protoMessages []*protogen.Message) []*Enum {
+	enums := make([]*Enum, 0, 128)
+	for _, pm := range protoMessages {
+		tmpNestedMessageName := string(pm.Desc.Name())
+		if nestedMessageName != "" {
+			tmpNestedMessageName = nestedMessageName + "_" + tmpNestedMessageName
+		}
+		enums = append(enums, intoEnums(tmpNestedMessageName, pm.Enums)...)
+		enums = append(enums, intoEnumsFromMessage(tmpNestedMessageName, pm.Messages)...)
+	}
+	return enums
+}
+
 // intoEnums generates the errors definitions, excluding the package statement.
-func intoEnums(protoEnums []*protogen.Enum) []*Enum {
+func intoEnums(nestedMessageName string, protoEnums []*protogen.Enum) []*Enum {
 	enums := make([]*Enum, 0, len(protoEnums))
 	for _, pe := range protoEnums {
 		if len(pe.Values) == 0 {
@@ -120,8 +135,12 @@ func intoEnums(protoEnums []*protogen.Enum) []*Enum {
 		bb := strings.ReplaceAll(string(b), `"`, "")
 		bb = strings.Replace(bb, "{", "[", 1)
 		bb = strings.Replace(bb, "}", "]", 1)
+		name := string(pe.Desc.Name())
+		if nestedMessageName != "" {
+			name = nestedMessageName + "_" + name
+		}
 		enums = append(enums, &Enum{
-			Name:    string(pe.Desc.Name()),
+			Name:    name,
 			Comment: strings.ReplaceAll(string(pe.Comments.Leading), "\n", "") + ", " + bb,
 			Values:  eValues,
 		})
