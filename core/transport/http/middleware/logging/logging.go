@@ -140,7 +140,7 @@ func Log() gin.HandlerFunc {
 
 func getTraceId(ctx context.Context) string {
 	if sc := trace.SpanContextFromContext(ctx); sc.HasTraceID() {
-		return sc.SpanID().String()
+		return sc.TraceID().String()
 	}
 	return ""
 }
