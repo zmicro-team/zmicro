@@ -16,15 +16,15 @@ var reg = regexp.MustCompile(`{[\\.\w]+}`)
 
 // EncodeURL encode msg to url path.
 // pathTemplate is a template of url path like http://helloworld.dev/{name}/sub/{sub.name},
-func (c *Codec) EncodeURL(pathTemplate string, msg any, needQuery bool) string {
+func (c *Codec) EncodeURL(pathTemplate string, v any, needQuery bool) string {
 	var repl func(in string) string
 
-	if msg == nil || (reflect.ValueOf(msg).Kind() == reflect.Ptr && reflect.ValueOf(msg).IsNil()) {
+	if v == nil || (reflect.ValueOf(v).Kind() == reflect.Ptr && reflect.ValueOf(v).IsNil()) {
 		return pathTemplate
 	}
 
 	pathParams := make(map[string]struct{})
-	if mg, ok := msg.(proto.Message); ok {
+	if mg, ok := v.(proto.Message); ok {
 		repl = func(in string) string {
 			// in: {xxx}
 			if len(in) < 4 { //nolint:gomnd
@@ -47,7 +47,7 @@ func (c *Codec) EncodeURL(pathTemplate string, msg any, needQuery bool) string {
 			key := in[1 : len(in)-1]
 			fmt.Println(key)
 			vars := strings.Split(key, ".")
-			if value, err := getValueWithField(msg, vars, c.TagName); err == nil {
+			if value, err := getValueWithField(v, vars, c.TagName); err == nil {
 				pathParams[key] = struct{}{}
 				return value
 			}
@@ -57,7 +57,7 @@ func (c *Codec) EncodeURL(pathTemplate string, msg any, needQuery bool) string {
 	path := reg.ReplaceAllStringFunc(pathTemplate, repl)
 
 	if needQuery {
-		values, err := c.Encode(msg)
+		values, err := c.Encode(v)
 		if err == nil && len(values) > 0 {
 			for key := range pathParams {
 				delete(values, key)

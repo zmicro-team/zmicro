@@ -11,7 +11,7 @@ import (
 // Codec is a Codec implementation with yaml.
 type Codec struct{}
 
-// ContentType always Returns "application/yaml".
+// ContentType always Returns "application/yaml; charset=utf-8".
 func (*Codec) ContentType(_ interface{}) string {
 	return "application/toml; charset=utf-8"
 }
