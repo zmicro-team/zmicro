@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mime"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"google.golang.org/protobuf/encoding/protojson"
@@ -55,7 +56,7 @@ var (
 type Encoding struct {
 	mimeMap   map[string]codec.Marshaler
 	mimeQuery codec.FormMarshaler
-	mimeUri   codec.FormMarshaler
+	mimeUri   codec.UriMarshaler
 }
 
 // New encoding with default Marshalers
@@ -116,7 +117,7 @@ func (r *Encoding) Register(mime string, marshaler codec.Marshaler) error {
 			}
 			r.mimeQuery = m
 		case MIMEURI:
-			m, ok := marshaler.(codec.FormMarshaler)
+			m, ok := marshaler.(codec.UriMarshaler)
 			if !ok {
 				return errors.New("marshaller should be implement codec.FormMarshaler")
 			}
@@ -282,4 +283,20 @@ func parseAcceptHeader(header string) []string {
 		values[i] = strings.TrimSpace(values[i])
 	}
 	return values
+}
+
+// Encode encode v use contentType
+func (r *Encoding) Encode(contentType string, v any) ([]byte, error) {
+	return r.Get(contentType).Marshal(v)
+}
+
+// EncodeQuery encode v to the query url.Values.
+func (r *Encoding) EncodeQuery(v any) (url.Values, error) {
+	return r.mimeQuery.Encode(v)
+}
+
+// EncodeURL encode msg to url path.
+// pathTemplate is a template of url path like http://helloworld.dev/{name}/sub/{sub.name},
+func (r *Encoding) EncodeURL(athTemplate string, msg any, needQuery bool) string {
+	return r.mimeUri.EncodeURL(athTemplate, msg, needQuery)
 }

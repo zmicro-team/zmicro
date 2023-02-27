@@ -28,10 +28,24 @@ type FormMarshaler interface {
 	FormCodec
 }
 
+// UriMarshaler defines a conversion between byte sequence and gRPC payloads / fields.
+type UriMarshaler interface {
+	Marshaler
+	FormCodec
+	UriEncoder
+}
+
 // FormCodec encode or decode a url.values
 type FormCodec interface {
 	Encode(v any) (url.Values, error)
 	Decode(vs url.Values, v any) error
+}
+
+// UriEncoder encode to url path
+type UriEncoder interface {
+	// EncodeURL encode msg to url path.
+	// pathTemplate is a template of url path like http://helloworld.dev/{name}/sub/{sub.name},
+	EncodeURL(pathTemplate string, msg any, needQuery bool) string
 }
 
 // Decoder decodes a byte sequence
