@@ -25,6 +25,7 @@ type Codec struct {
 	protojson.UnmarshalOptions
 }
 
+// ContentType always Returns "application/json; charset=utf-8".
 func (*Codec) ContentType(_ interface{}) string {
 	return "application/json; charset=utf-8"
 }

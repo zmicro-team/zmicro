@@ -295,8 +295,8 @@ func (r *Encoding) EncodeQuery(v any) (url.Values, error) {
 	return r.mimeQuery.Encode(v)
 }
 
-// EncodeURL encode msg to url path.
+// EncodeURL encode v to url path.
 // pathTemplate is a template of url path like http://helloworld.dev/{name}/sub/{sub.name},
-func (r *Encoding) EncodeURL(athTemplate string, msg any, needQuery bool) string {
-	return r.mimeUri.EncodeURL(athTemplate, msg, needQuery)
+func (r *Encoding) EncodeURL(athTemplate string, v any, needQuery bool) string {
+	return r.mimeUri.EncodeURL(athTemplate, v, needQuery)
 }

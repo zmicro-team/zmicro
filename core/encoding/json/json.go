@@ -24,7 +24,7 @@ type Codec struct {
 	DisallowUnknownFields bool
 }
 
-// ContentType always Returns "application/json".
+// ContentType always Returns "application/json; charset=utf-8".
 func (*Codec) ContentType(_ interface{}) string {
 	return "application/json; charset=utf-8"
 }
