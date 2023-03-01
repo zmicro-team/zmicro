@@ -14,7 +14,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.6
 	github.com/rpcxio/rpcx-etcd v0.2.0
 	github.com/rpcxio/rpcx-plugins v0.0.0-20220730073026-120f5ed14272
-	github.com/smallnest/rpcx v1.7.15
+	github.com/smallnest/rpcx v1.8.2
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
