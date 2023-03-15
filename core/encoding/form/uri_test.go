@@ -21,7 +21,7 @@ func TestEncodeURL(t *testing.T) {
 		msg          any
 		needQuery    bool
 	}
-	codec := New("json")
+	codec := New("json").EnableProto()
 	tests := []struct {
 		name string
 		args args

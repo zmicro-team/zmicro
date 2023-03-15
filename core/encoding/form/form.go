@@ -12,9 +12,10 @@ import (
 )
 
 type Codec struct {
-	Encoder *form.Encoder
-	Decoder *form.Decoder
-	TagName string
+	Encoder  *form.Encoder
+	Decoder  *form.Decoder
+	TagName  string
+	UseProto bool
 }
 
 // New returns a new Codec,
@@ -29,7 +30,14 @@ func New(tagName string) *Codec {
 		encoder,
 		decoder,
 		tagName,
+		false,
 	}
+}
+
+// EnableProto enable use proto field
+func (c *Codec) EnableProto() *Codec {
+	c.UseProto = true
+	return c
 }
 
 func (*Codec) ContentType(_ interface{}) string {
@@ -73,8 +81,12 @@ func (c *Codec) Encode(v any) (url.Values, error) {
 	var vs url.Values
 	var err error
 
-	if m, ok := v.(proto.Message); ok {
-		vs, err = EncodeValues(m)
+	if c.UseProto {
+		if m, ok := v.(proto.Message); ok {
+			vs, err = EncodeValues(m)
+		} else {
+			vs, err = c.Encoder.Encode(v)
+		}
 	} else {
 		vs, err = c.Encoder.Encode(v)
 	}
@@ -90,18 +102,20 @@ func (c *Codec) Encode(v any) (url.Values, error) {
 }
 
 func (c *Codec) Decode(vs url.Values, v any) error {
-	rv := reflect.ValueOf(v)
-	for rv.Kind() == reflect.Ptr {
-		if rv.IsNil() {
-			rv.Set(reflect.New(rv.Type().Elem()))
+	if c.UseProto {
+		if m, ok := v.(proto.Message); ok {
+			return DecodeValues(m, vs)
 		}
-		rv = rv.Elem()
-	}
-	if m, ok := v.(proto.Message); ok {
-		return DecodeValues(m, vs)
-	}
-	if m, ok := reflect.Indirect(reflect.ValueOf(v)).Interface().(proto.Message); ok {
-		return DecodeValues(m, vs)
+		rv := reflect.ValueOf(v)
+		for rv.Kind() == reflect.Ptr {
+			if rv.IsNil() {
+				rv.Set(reflect.New(rv.Type().Elem()))
+			}
+			rv = rv.Elem()
+		}
+		if m, ok := rv.Interface().(proto.Message); ok {
+			return DecodeValues(m, vs)
+		}
 	}
 	return c.Decoder.Decode(v, vs)
 }
