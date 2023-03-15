@@ -1,0 +1,139 @@
+package http
+
+import (
+	"bytes"
+	"context"
+	"errors"
+	"io"
+
+	"github.com/go-resty/resty/v2"
+	"github.com/zmicro-team/zmicro/core/encoding"
+	"golang.org/x/oauth2"
+)
+
+type Client struct {
+	cc    *resty.Client
+	codec *encoding.Encoding
+	// A TokenSource is anything that can return a token.
+	tokenSource oauth2.TokenSource
+	// no auth
+	noAuth bool
+	// validate request
+	validate func(any) error
+}
+
+type ClientOption func(*Client)
+
+func WithRestyClient(resty *resty.Client) ClientOption {
+	return func(c *Client) {
+		c.cc = resty
+	}
+}
+
+func WithEncoding(codec *encoding.Encoding) ClientOption {
+	return func(c *Client) {
+		c.codec = codec
+	}
+}
+
+func WithTokenSource(t oauth2.TokenSource) ClientOption {
+	return func(c *Client) {
+		c.tokenSource = t
+	}
+}
+
+func WithNoAuth() ClientOption {
+	return func(c *Client) {
+		c.noAuth = true
+	}
+}
+
+func WithValidate(f func(any) error) ClientOption {
+	return func(c *Client) {
+		c.validate = f
+	}
+}
+
+func NewClient(opts ...ClientOption) *Client {
+	c := &Client{
+		cc:    resty.New(),
+		codec: encoding.New(),
+	}
+	for _, opt := range opts {
+		opt(c)
+	}
+	c.cc.OnAfterResponse(func(c *resty.Client, r *resty.Response) error {
+		if r.RawResponse != nil {
+			body := r.RawResponse.Body
+			defer body.Close()
+			r.RawResponse.Body = io.NopCloser(bytes.NewBuffer(r.Body()))
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *Client) RestyClient() *resty.Client { return c.cc }
+
+func (c *Client) Invoke(ctx context.Context, method, path string, in, out any) error {
+	if c.validate != nil {
+		err := c.validate(in)
+		if err != nil {
+			return err
+		}
+	}
+	settings := MustFromValueCallOption(ctx)
+	r := c.cc.R().SetContext(ctx)
+	if in != nil {
+		reqBody, err := c.codec.Encode(settings.contentType, in)
+		if err != nil {
+			return err
+		}
+		r = r.SetBody(reqBody)
+	}
+	if !c.noAuth && !settings.noAuth {
+		if c.tokenSource == nil {
+			return errors.New("transport: token source should be not nil")
+		}
+		tk, err := c.tokenSource.Token()
+		if err != nil {
+			return err
+		}
+		r.SetHeader("Authorization", tk.Type()+" "+tk.AccessToken)
+	}
+	r.SetHeader("Content-Type", settings.contentType)
+	for k, vs := range settings.header {
+		for _, v := range vs {
+			r.Header.Add(k, v)
+		}
+	}
+	resp, err := r.Execute(method, c.cc.BaseURL+path)
+	if err != nil {
+		return err
+	}
+	if resp.IsError() {
+		return &ErrorReply{
+			Code:   resp.StatusCode(),
+			Body:   resp.Body(),
+			Header: resp.Header(),
+		}
+	}
+	defer resp.RawResponse.Body.Close()
+	return c.codec.InboundForResponse(resp.RawResponse).NewDecoder(resp.RawResponse.Body).Decode(out)
+}
+
+// EncodeURL encode msg to url path.
+// pathTemplate is a template of url path like http://helloworld.dev/{name}/sub/{sub.name}.
+func (c *Client) EncodeURL(pathTemplate string, msg any, needQuery bool) string {
+	return c.codec.EncodeURL(pathTemplate, msg, needQuery)
+}
+
+// EncodeURL encode msg to url path.
+// pathTemplate is a template of url path like http://helloworld.dev/{name}/sub/{sub.name}.
+func (c *Client) EncodeQuery(v any) (string, error) {
+	vv, err := c.codec.EncodeQuery(v)
+	if err != nil {
+		return "", err
+	}
+	return vv.Encode(), nil
+}

@@ -10,15 +10,13 @@ import "gogoproto/gogo.proto";
 service Greeter {
   rpc SayHello(HelloRequest) returns (HelloReply) {
     option (google.api.http) = {
-      get: "/hello/{name}"
+      get : "/hello/{name}"
     };
   }
 }
 
 message HelloRequest {
-  string name = 1 [(gogoproto.moretags) = 'uri:"name"'];
+  string name = 1 [ (gogoproto.moretags) = 'uri:"name"' ];
 }
 
-message HelloReply {
-  string message = 1;
-}
+message HelloReply { string message = 1; }

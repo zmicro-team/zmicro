@@ -13,5 +13,7 @@ for PROTO in $PROTOS; do
     --zmicro-gin_out=. \
     --zmicro-gin_opt paths=source_relative \
     --zmicro-gin_opt allow_empty_patch_body=true \
+    --zmicro-resty_out=. \
+    --zmicro-resty_opt paths=source_relative \
     $PROTO
 done
