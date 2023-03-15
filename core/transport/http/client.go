@@ -24,12 +24,6 @@ type Client struct {
 
 type ClientOption func(*Client)
 
-func WithRestyClient(resty *resty.Client) ClientOption {
-	return func(c *Client) {
-		c.cc = resty
-	}
-}
-
 func WithEncoding(codec *encoding.Encoding) ClientOption {
 	return func(c *Client) {
 		c.codec = codec
@@ -128,8 +122,8 @@ func (c *Client) EncodeURL(pathTemplate string, msg any, needQuery bool) string 
 	return c.codec.EncodeURL(pathTemplate, msg, needQuery)
 }
 
-// EncodeURL encode msg to url path.
-// pathTemplate is a template of url path like http://helloworld.dev/{name}/sub/{sub.name}.
+// EncodeQuery encode v into “URL encoded” form
+// ("bar=baz&foo=quux") sorted by key.
 func (c *Client) EncodeQuery(v any) (string, error) {
 	vv, err := c.codec.EncodeQuery(v)
 	if err != nil {
