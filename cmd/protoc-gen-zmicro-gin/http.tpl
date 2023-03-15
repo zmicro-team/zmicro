@@ -38,51 +38,6 @@ type {{$svrType}}HTTPServer interface {
 {{- end}}
 }
 
-type Unimplemented{{$svrType}}HTTPServer struct {}
-
-{{- range .MethodSets}}
-{{- if eq $rpcMode "rpcx"}}
-func (*Unimplemented{{$svrType}}HTTPServer) {{.Name}}(context.Context, *{{.Request}}, *{{.Reply}}) error {
-	return errors.New("method {{.Name}} not implemented")
-}
-{{- else}}
-func (*Unimplemented{{$svrType}}HTTPServer) {{.Name}}(context.Context, *{{.Request}}) (*{{.Reply}}, error) {
-	return nil, errors.New("method {{.Name}} not implemented")
-}
-{{- end}}
-{{- end}}
-func (*Unimplemented{{$svrType}}HTTPServer) Validate(context.Context, any) error { return nil }
-func (*Unimplemented{{$svrType}}HTTPServer) ErrorEncoder(c *gin.Context, err error, isBadRequest bool) {
-	var code = 500
-	if isBadRequest {
-		code = 400
-	}
-	c.String(code, err.Error())
-}
-{{- if $useEncoding}}
-func (*Unimplemented{{$svrType}}HTTPServer) Bind(c *gin.Context, v any) error {
-    return c.ShouldBind(v)
-}
-func (*Unimplemented{{$svrType}}HTTPServer) BindQuery(c *gin.Context, v any) error {
-    return c.ShouldBindQuery(v)
-}
-func (*Unimplemented{{$svrType}}HTTPServer) BindUri(c *gin.Context, v any) error {
-    return c.ShouldBindUri(v)
-}
-func (*Unimplemented{{$svrType}}HTTPServer) RequestWithUri(req *http.Request, _ gin.Params) *http.Request {
-    return req
-}
-func (*Unimplemented{{$svrType}}HTTPServer) Render(c *gin.Context, v any) {
-    c.JSON(200, v)
-}
-{{- else}}
-{{- if $useCustomResp}}
-func (*Unimplemented{{$svrType}}HTTPServer) Render(c *gin.Context, v any) {
-	c.JSON(200, v)
-}
-{{- end}}
-{{- end}}
-
 func Register{{$svrType}}HTTPServer(g *gin.RouterGroup, srv {{$svrType}}HTTPServer) {
 	r := g.Group("")
 	{{- range .Methods}}

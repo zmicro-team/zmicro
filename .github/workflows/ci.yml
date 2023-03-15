@@ -3,10 +3,10 @@ name: Tests
 on:
   push:
     paths-ignore:
-      - '**.md'
+      - "**.md"
   pull_request:
     paths-ignore:
-      - '**.md'
+      - "**.md"
 
 env:
   GO111MODULE: on
@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go-version: ["1.18.x"]
+        go-version: ["1.19.x", "1.20.*"]
         os: [ubuntu-latest, windows-latest]
 
     steps:
@@ -40,8 +40,8 @@ jobs:
           printf "\n\nSystem environment:\n\n"
           env
           # Calculate the short SHA1 hash of the git commit
-          echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
-          echo "::set-output name=go_cache::$(go env GOCACHE)"
+          echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "go_cache=$(go env GOCACHE)" >> $GITHUB_OUTPUT
 
       - name: Cache go modules
         uses: actions/cache@v3

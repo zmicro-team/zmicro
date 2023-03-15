@@ -38,7 +38,7 @@ type Implemented struct {
 func NewDefaultImplemented() *Implemented {
 	e := encoding.New()
 	err := e.Register(encoding.MIMEJSON, &Codec{
-		Marshaler: &jsonpb.Codec{
+		Codec: &jsonpb.Codec{
 			MarshalOptions: protojson.MarshalOptions{
 				UseProtoNames:  true,
 				UseEnumNumbers: true,
