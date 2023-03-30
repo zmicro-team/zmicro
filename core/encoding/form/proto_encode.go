@@ -14,23 +14,23 @@ import (
 )
 
 // EncodeValues encode a message into url values.
-func EncodeValues(msg proto.Message) (url.Values, error) {
+func EncodeValues(msg proto.Message, useProtoNames bool) (url.Values, error) {
 	if msg == nil || (reflect.ValueOf(msg).Kind() == reflect.Ptr && reflect.ValueOf(msg).IsNil()) {
 		return url.Values{}, nil
 	}
 	u := make(url.Values)
-	err := encodeByField(u, "", msg.ProtoReflect())
+	err := encodeByField(u, "", msg.ProtoReflect(), useProtoNames)
 	if err != nil {
 		return nil, err
 	}
 	return u, nil
 }
 
-func encodeByField(u url.Values, path string, m protoreflect.Message) (finalErr error) {
+func encodeByField(u url.Values, path string, m protoreflect.Message, useProtoNames bool) (finalErr error) {
 	m.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 		var key string
 		var newPath string
-		if fd.HasJSONName() {
+		if !useProtoNames && fd.HasJSONName() {
 			key = fd.JSONName()
 		} else {
 			key = fd.TextName()
@@ -75,7 +75,7 @@ func encodeByField(u url.Values, path string, m protoreflect.Message) (finalErr 
 				u.Set(newPath, value)
 				return true
 			}
-			err = encodeByField(u, newPath, v.Message())
+			err = encodeByField(u, newPath, v.Message(), useProtoNames)
 			if err != nil {
 				finalErr = err
 				return false
@@ -184,7 +184,7 @@ func encodeMessage(msgDescriptor protoreflect.MessageDescriptor, value protorefl
 }
 
 // EncodeFieldMask return field mask name=paths
-func EncodeFieldMask(m protoreflect.Message) (query string) {
+func EncodeFieldMask(m protoreflect.Message, useProtoNames bool) (query string) {
 	m.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 		if fd.Kind() == protoreflect.MessageKind {
 			if msg := fd.Message(); msg.FullName() == "google.protobuf.FieldMask" {
@@ -192,7 +192,7 @@ func EncodeFieldMask(m protoreflect.Message) (query string) {
 				if err != nil {
 					return false
 				}
-				if fd.HasJSONName() {
+				if !useProtoNames && fd.HasJSONName() {
 					query = fd.JSONName() + "=" + value
 				} else {
 					query = fd.TextName() + "=" + value

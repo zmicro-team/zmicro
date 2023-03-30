@@ -12,15 +12,17 @@ import (
 )
 
 type Codec struct {
-	Encoder  *form.Encoder
-	Decoder  *form.Decoder
-	TagName  string
-	UseProto bool
+	Encoder *form.Encoder
+	Decoder *form.Decoder
+	TagName string
+	// UseProtoNames uses proto field name instead of lowerCamelCase name
+	// in JSON field names.
+	UseProtoNames bool
 }
 
 // New returns a new Codec,
 // default tag name is "json",
-// proto use protoJSON tag
+// proto use proto field name
 func New(tagName string) *Codec {
 	encoder := form.NewEncoder()
 	encoder.SetTagName(tagName)
@@ -30,13 +32,14 @@ func New(tagName string) *Codec {
 		encoder,
 		decoder,
 		tagName,
-		false,
+		true,
 	}
 }
 
-// EnableProto enable use proto field
-func (c *Codec) EnableProto() *Codec {
-	c.UseProto = true
+// DisableUseProtoNames disable proto field name, use lowerCamelCase name
+// in JSON field names.
+func (c *Codec) DisableUseProtoNames() *Codec {
+	c.UseProtoNames = false
 	return c
 }
 
@@ -81,12 +84,8 @@ func (c *Codec) Encode(v any) (url.Values, error) {
 	var vs url.Values
 	var err error
 
-	if c.UseProto {
-		if m, ok := v.(proto.Message); ok {
-			vs, err = EncodeValues(m)
-		} else {
-			vs, err = c.Encoder.Encode(v)
-		}
+	if m, ok := v.(proto.Message); ok {
+		vs, err = EncodeValues(m, c.UseProtoNames)
 	} else {
 		vs, err = c.Encoder.Encode(v)
 	}
@@ -102,20 +101,18 @@ func (c *Codec) Encode(v any) (url.Values, error) {
 }
 
 func (c *Codec) Decode(vs url.Values, v any) error {
-	if c.UseProto {
-		if m, ok := v.(proto.Message); ok {
-			return DecodeValues(m, vs)
+	if m, ok := v.(proto.Message); ok {
+		return DecodeValues(m, vs)
+	}
+	rv := reflect.ValueOf(v)
+	for rv.Kind() == reflect.Ptr {
+		if rv.IsNil() {
+			rv.Set(reflect.New(rv.Type().Elem()))
 		}
-		rv := reflect.ValueOf(v)
-		for rv.Kind() == reflect.Ptr {
-			if rv.IsNil() {
-				rv.Set(reflect.New(rv.Type().Elem()))
-			}
-			rv = rv.Elem()
-		}
-		if m, ok := rv.Interface().(proto.Message); ok {
-			return DecodeValues(m, vs)
-		}
+		rv = rv.Elem()
+	}
+	if m, ok := rv.Interface().(proto.Message); ok {
+		return DecodeValues(m, vs)
 	}
 	return c.Decoder.Decode(v, vs)
 }
