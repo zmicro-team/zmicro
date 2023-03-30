@@ -15,7 +15,7 @@ import (
 )
 
 func TestProto_Codec(t *testing.T) {
-	codec := New("json").EnableProto()
+	codec := New("json").DisableUseProtoNames()
 
 	want := &examplepb.Complex{
 		Id:      2233,
