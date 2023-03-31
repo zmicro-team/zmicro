@@ -5,11 +5,22 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/http"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/zmicro-team/zmicro/core/encoding"
+	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2"
 )
+
+var noBodyMethods = []string{
+	http.MethodGet,
+	http.MethodHead,
+	http.MethodDelete,
+	http.MethodConnect,
+	http.MethodOptions,
+	http.MethodTrace,
+}
 
 type Client struct {
 	cc    *resty.Client
@@ -67,8 +78,12 @@ func NewClient(opts ...ClientOption) *Client {
 	return c
 }
 
+// Deprecated: use Deref instead.
 func (c *Client) RestyClient() *resty.Client { return c.cc }
 
+func (c *Client) Deref() *resty.Client { return c.cc }
+
+// Invoke do not use this function. use Execute instead.
 func (c *Client) Invoke(ctx context.Context, method, path string, in, out any) error {
 	if c.validate != nil {
 		err := c.validate(in)
@@ -76,6 +91,7 @@ func (c *Client) Invoke(ctx context.Context, method, path string, in, out any) e
 			return err
 		}
 	}
+
 	settings := MustFromValueCallOption(ctx)
 	r := c.cc.R().SetContext(ctx)
 	if in != nil {
@@ -114,6 +130,58 @@ func (c *Client) Invoke(ctx context.Context, method, path string, in, out any) e
 	}
 	defer resp.RawResponse.Body.Close()
 	return c.codec.InboundForResponse(resp.RawResponse).NewDecoder(resp.RawResponse.Body).Decode(out)
+}
+
+func (c *Client) Execute(ctx context.Context, method, path string, req, resp any, opts ...CallOption) error {
+	var r any
+
+	settings := DefaultCallOption(path)
+	for _, opt := range opts {
+		opt(&settings)
+	}
+
+	hasBody := !slices.Contains(noBodyMethods, method)
+	if hasBody {
+		r = req
+	}
+	url := c.EncodeURL(settings.Path, req, !hasBody)
+	ctx = WithValueCallOption(ctx, settings)
+	return c.Invoke(ctx, method, url, r, &resp)
+}
+
+// Get method does GET HTTP request. It's defined in section 4.3.1 of RFC7231.
+func (c *Client) Get(ctx context.Context, path string, req, resp any, opts ...CallOption) error {
+	return c.Execute(ctx, http.MethodGet, path, req, resp, opts...)
+}
+
+// Head method does HEAD HTTP request. It's defined in section 4.3.2 of RFC7231.
+func (c *Client) Head(ctx context.Context, path string, req, resp any, opts ...CallOption) error {
+	return c.Execute(ctx, http.MethodHead, path, req, resp, opts...)
+}
+
+// Post method does POST HTTP request. It's defined in section 4.3.3 of RFC7231.
+func (c *Client) Post(ctx context.Context, path string, req, resp any, opts ...CallOption) error {
+	return c.Execute(ctx, http.MethodPost, path, req, resp, opts...)
+}
+
+// Put method does PUT HTTP request. It's defined in section 4.3.4 of RFC7231.
+func (c *Client) Put(ctx context.Context, path string, req, resp any, opts ...CallOption) error {
+	return c.Execute(ctx, http.MethodPut, path, req, resp, opts...)
+}
+
+// Delete method does DELETE HTTP request. It's defined in section 4.3.5 of RFC7231.
+func (c *Client) Delete(ctx context.Context, path string, req, resp any, opts ...CallOption) error {
+	return c.Execute(ctx, http.MethodDelete, path, req, resp, opts...)
+}
+
+// Options method does OPTIONS HTTP request. It's defined in section 4.3.7 of RFC7231.
+func (c *Client) Options(ctx context.Context, path string, req, resp any, opts ...CallOption) error {
+	return c.Execute(ctx, http.MethodOptions, path, req, resp, opts...)
+}
+
+// Patch method does PATCH HTTP request. It's defined in section 2 of RFC5789.
+func (c *Client) Patch(ctx context.Context, path string, req, resp any, opts ...CallOption) error {
+	return c.Execute(ctx, http.MethodPatch, path, req, resp, opts...)
 }
 
 // EncodeURL encode msg to url path.
