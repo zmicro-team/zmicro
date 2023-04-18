@@ -22,6 +22,5 @@ func InitHttpServer(r *gin.Engine) error {
 	r.GET("/hello/:name", func(c *gin.Context) {
 		c.String(http.StatusOK, fmt.Sprintf("hello %s!", c.Param("name")))
 	})
-
 	return nil
 }
