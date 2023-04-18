@@ -15,14 +15,17 @@ var defaultValidator = func() *validator.Validate {
 	return v
 }()
 
+// Deprecated: use Carrier interface
 func DisableBindValidation() {
 	disableBindValidation = true
 }
 
+// Deprecated: use Carrier interface
 func Validator() *validator.Validate {
 	return defaultValidator
 }
 
+// Deprecated: use Carrier interface
 func Validate(ctx context.Context, v any) error {
 	if disableBindValidation {
 		return nil
@@ -30,6 +33,7 @@ func Validate(ctx context.Context, v any) error {
 	return defaultValidator.StructCtx(ctx, v)
 }
 
+// Deprecated: use Carrier interface
 func ErrorEncoder(c *gin.Context, err error, isBadRequest bool) {
 	if isBadRequest {
 		err = errors.ErrBadRequest(err.Error())

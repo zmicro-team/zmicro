@@ -10,6 +10,7 @@ import (
 type ctxCarrierKey struct{}
 
 // Carrier is an HTTP Carrier.
+// protoc-gen-zmicro-gin use disable_template=true options
 type Carrier interface {
 	// WithValueUri sets the URL params for the given request.
 	WithValueUri(*http.Request, gin.Params) *http.Request
