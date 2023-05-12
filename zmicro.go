@@ -119,10 +119,11 @@ func New(opts ...Option) *App {
 		zc:   zc,
 	}
 
-	tracing := false
+	tracing := true // always true for trace id
 	if zc.Tracer.Addr != "" {
 		setTracerProvider(zc.Tracer.Addr, zc.App.Name)
-		tracing = true
+	} else {
+		setNoExporterTracerProvider(zc.App.Name)
 	}
 
 	if app.opts.InitRpcServer != nil {
@@ -161,6 +162,26 @@ func setTracerProvider(endpoint string, name string) *trace.TracerProvider {
 	tp := trace.NewTracerProvider(
 		trace.WithSampler(trace.AlwaysSample()),
 		trace.WithBatcher(exp),
+		trace.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String(name),
+		)),
+	)
+
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(
+		propagation.NewCompositeTextMapPropagator(
+			propagation.TraceContext{},
+			propagation.Baggage{},
+		),
+	)
+
+	return tp
+}
+
+func setNoExporterTracerProvider(name string) *trace.TracerProvider {
+	tp := trace.NewTracerProvider(
+		trace.WithSampler(trace.AlwaysSample()),
 		trace.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
 			semconv.ServiceNameKey.String(name),
