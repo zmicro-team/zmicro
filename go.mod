@@ -17,7 +17,7 @@ require (
 	github.com/rpcxio/rpcx-plugins v0.0.0-20220730073026-120f5ed14272
 	github.com/smallnest/rpcx v1.8.7
 	github.com/spf13/cast v1.5.1
-	github.com/spf13/viper v1.15.0
+	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
@@ -116,15 +116,15 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xtaci/kcp-go v5.4.20+incompatible // indirect
-	go.etcd.io/etcd/api/v3 v3.5.7 // indirect
-	go.etcd.io/etcd/client/pkg/v3 v3.5.7 // indirect
+	go.etcd.io/etcd/api/v3 v3.5.9 // indirect
+	go.etcd.io/etcd/client/pkg/v3 v3.5.9 // indirect
 	go.etcd.io/etcd/client/v2 v2.305.7 // indirect
-	go.etcd.io/etcd/client/v3 v3.5.7 // indirect
+	go.etcd.io/etcd/client/v3 v3.5.9 // indirect
 	go.opentelemetry.io/otel/metric v1.16.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/crypto v0.7.0 // indirect
+	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/mod v0.9.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
