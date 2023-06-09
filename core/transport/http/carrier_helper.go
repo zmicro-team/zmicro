@@ -14,9 +14,15 @@ import (
 
 var _ Carrier = (*Carry)(nil)
 
+type ErrorTranslator interface {
+	Translate(err error) error
+}
+
 type Carry struct {
 	Validation *validator.Validate
 	Encoding   *encoding.Encoding
+	// translate error
+	translate ErrorTranslator
 }
 
 func NewCarry() *Carry {
@@ -44,6 +50,21 @@ func NewCarry() *Carry {
 		Encoding: e,
 	}
 }
+func (cy *Carry) SetEncoding(e *encoding.Encoding) *Carry {
+	cy.Encoding = e
+	return cy
+}
+
+func (cy *Carry) SetValidation(v *validator.Validate) *Carry {
+	cy.Validation = v
+	return cy
+}
+
+func (cy *Carry) SetTranslateError(e ErrorTranslator) *Carry {
+	cy.translate = e
+	return cy
+}
+
 func (*Carry) WithValueUri(req *http.Request, params gin.Params) *http.Request {
 	return WithValueUri(req, params)
 }
@@ -68,8 +89,11 @@ func (cy *Carry) BindUri(c *gin.Context, v any) error {
 func (*Carry) ErrorBadRequest(c *gin.Context, err error) {
 	Error(c, errors.ErrBadRequest(err.Error()))
 }
-func (*Carry) Error(cg *gin.Context, err error) {
-	Error(cg, err)
+func (cy *Carry) Error(c *gin.Context, err error) {
+	if cy.translate != nil {
+		err = cy.translate.Translate(err)
+	}
+	Error(c, err)
 }
 func (cy *Carry) Render(c *gin.Context, v any) {
 	if cy.Encoding == nil {

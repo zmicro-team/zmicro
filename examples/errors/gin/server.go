@@ -27,15 +27,15 @@ func main() {
 func InitHttpServer(r *gin.Engine) error {
 	gin.DisableBindValidation()
 
+	r.Use(zgin.CarrierInterceptor(zgin.NewCarry()))
+
 	g := r.Group("/")
 	api.RegisterGreeterHTTPServer(g, &GreeterImpl{})
 
 	return nil
 }
 
-type GreeterImpl struct {
-	zgin.Implemented
-}
+type GreeterImpl struct{}
 
 func (s *GreeterImpl) TestError(ctx context.Context, req *api.ErrorRequest, rsp *api.ErrorReply) error {
 	if req.Name == "internal" {

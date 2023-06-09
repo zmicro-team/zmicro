@@ -44,15 +44,15 @@ func (s *GreeterImpl) SayHello(ctx context.Context, req *proto.HelloRequest, rsp
 func InitHttpServer(r *gin.Engine) error {
 	gin.DisableBindValidation()
 
+	r.Use(zgin.CarrierInterceptor(zgin.NewCarry()))
+
 	g := r.Group("/")
 	api.RegisterGreeterHTTPServer(g, &HttpGreeter{})
 
 	return nil
 }
 
-type HttpGreeter struct {
-	zgin.Implemented
-}
+type HttpGreeter struct{}
 
 func (s *HttpGreeter) SayHello(ctx context.Context, req *api.HelloRequest, rsp *api.HelloReply) error {
 	*rsp = api.HelloReply{

@@ -78,9 +78,6 @@ func NewClient(opts ...ClientOption) *Client {
 	return c
 }
 
-// Deprecated: use Deref instead.
-func (c *Client) RestyClient() *resty.Client { return c.cc }
-
 func (c *Client) Deref() *resty.Client { return c.cc }
 
 // Invoke do not use this function. use Execute instead.
