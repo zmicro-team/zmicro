@@ -409,8 +409,8 @@ github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFR
 github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZVejAe8=
 github.com/rpcxio/libkv v0.5.1 h1:M0/QqwTcdXz7us0NB+2i8Kq5+wikTm7zZ4Hyb/jNgME=
 github.com/rpcxio/libkv v0.5.1/go.mod h1:zHGgtLr3cFhGtbalum0BrMPOjhFZFJXCKiws/25ewls=
-github.com/rpcxio/rpcx-etcd v0.2.0 h1:cBSWWQrDArHiga+CAS+zHQbSYWhX1xvzXHl7r0KBXW8=
-github.com/rpcxio/rpcx-etcd v0.2.0/go.mod h1:pW2koxtHWXX/c9y8UTM1MK3ItPgddT9PGducZF40IJ0=
+github.com/rpcxio/rpcx-etcd v0.3.1 h1:X0pMztmZAjthEVL6m3HlaXL8XI9kybGkIvlRWzSEuiE=
+github.com/rpcxio/rpcx-etcd v0.3.1/go.mod h1:pW2koxtHWXX/c9y8UTM1MK3ItPgddT9PGducZF40IJ0=
 github.com/rpcxio/rpcx-plugins v0.0.0-20220730073026-120f5ed14272 h1:UsehaNRNgArfDxEIRbOnLb9JT3/EoU7dUyZKYYLmXOE=
 github.com/rpcxio/rpcx-plugins v0.0.0-20220730073026-120f5ed14272/go.mod h1:bAXq4YQ3/iqfzOrpUiu/z10fGyreE+QVjIDhb0qykHw=
 github.com/rs/cors v1.8.3 h1:O+qNyWn7Z+F9M0ILBHgMVPuB1xTOucVd5gtaYyXBpRo=
