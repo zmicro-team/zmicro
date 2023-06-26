@@ -17,6 +17,7 @@ var useCustomResponse = flag.Bool("use_custom_response", false, "use custom resp
 var rpcMode = flag.String("rpc_mode", "rpcx", "rpc mode, default use rpcx rpc, options: rpcx,official")
 var allowFromAPI = flag.Bool("allow_from_api", false, "allow from api can convert different api format.")
 var useEncoding = flag.Bool("use_encoding", false, "use the framework encoding")
+var disableErrorBadRequest = flag.Bool("disable_error_bad_request", false, "disable error bad request")
 var disableTemplate = flag.Bool("disable_template", false, "disable use template")
 
 func main() {
