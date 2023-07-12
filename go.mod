@@ -15,7 +15,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.8
 	github.com/rpcxio/rpcx-etcd v0.2.0
 	github.com/rpcxio/rpcx-plugins v0.0.0-20220730073026-120f5ed14272
-	github.com/smallnest/rpcx v1.8.7
+	github.com/smallnest/rpcx v1.8.10
 	github.com/spf13/cast v1.5.1
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
@@ -65,6 +65,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/goccy/go-json v0.10.1 // indirect
+	github.com/godzie44/go-uring v0.0.0-20220926161041-69611e8b13d5 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/pprof v0.0.0-20230309165930-d61513b1440d // indirect
@@ -82,6 +83,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/klauspost/reedsolomon v1.11.7 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/libp2p/go-sockaddr v0.1.1 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
