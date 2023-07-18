@@ -136,7 +136,11 @@ func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 				}
 				g.P()
 				g.P("if err = shouldBind(&req); err != nil {")
-				g.P("carrier.ErrorBadRequest(c, err)")
+				if *disableErrorBadRequest {
+					g.P("carrier.Error(c, err)")
+				} else {
+					g.P("carrier.ErrorBadRequest(c, err)")
+				}
 				g.P("return")
 				g.P("}")
 				if s.RpcMode == "rpcx" {
