@@ -13,6 +13,7 @@ type NoProtoSub struct {
 type NoProtoHello struct {
 	Name string      `json:"name"`
 	Sub  *NoProtoSub `json:"sub"`
+	Id   []int64     `json:"id"`
 }
 
 func TestEncodeURL(t *testing.T) {
@@ -97,7 +98,6 @@ func TestEncodeURL(t *testing.T) {
 			},
 			`http://hello.dev/go/sub?sub.naming=golang`,
 		},
-
 		{
 			"no proto: no any param",
 			args{
@@ -121,6 +121,18 @@ func TestEncodeURL(t *testing.T) {
 				false,
 			},
 			`http://hello.dev/test/sub/2233!!!`,
+		},
+		{
+			"proto: param with repeated",
+			args{
+				"http://hello.dev/{name}/sub",
+				&NoProtoHello{
+					Name: "go",
+					Id:   []int64{1, 2},
+				},
+				true,
+			},
+			`http://hello.dev/go/sub?id=1&id=2`,
 		},
 		{
 			"no proto: param with empty",

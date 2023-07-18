@@ -45,7 +45,6 @@ func (c *Codec) EncodeURL(pathTemplate string, v any, needQuery bool) string {
 				return in
 			}
 			key := in[1 : len(in)-1]
-			fmt.Println(key)
 			vars := strings.Split(key, ".")
 			if value, err := getValueWithField(v, vars, c.TagName); err == nil {
 				pathParams[key] = struct{}{}
@@ -90,7 +89,7 @@ func getValueFromProtoWithField(v protoreflect.Message, fieldPath []string) (str
 		}
 		v = v.Get(fd).Message()
 	}
-	return EncodeField(fd, v.Get(fd))
+	return EncodeField(fd, v.Get(fd), true)
 }
 
 func getValueWithField(s any, fieldPath []string, tagName string) (string, error) {

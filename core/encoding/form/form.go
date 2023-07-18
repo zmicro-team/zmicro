@@ -15,14 +15,15 @@ type Codec struct {
 	Encoder *form.Encoder
 	Decoder *form.Decoder
 	TagName string
-	// UseProtoNames uses proto field name instead of lowerCamelCase name
-	// in JSON field names.
+	// UseProtoNames uses proto field name instead of
+	// lowerCamelCase name in JSON field names.
 	UseProtoNames bool
+	// UseEnumNumbers emits enum values as numbers.
+	UseEnumNumbers bool
 }
 
 // New returns a new Codec,
-// default tag name is "json",
-// proto use proto field name
+// default tag name is "json", and proto message use proto field.
 func New(tagName string) *Codec {
 	encoder := form.NewEncoder()
 	encoder.SetTagName(tagName)
@@ -32,6 +33,7 @@ func New(tagName string) *Codec {
 		encoder,
 		decoder,
 		tagName,
+		true,
 		true,
 	}
 }
@@ -43,6 +45,13 @@ func (c *Codec) DisableUseProtoNames() *Codec {
 	return c
 }
 
+// DisableUseProtoNames disable emits enum values as numbers.
+func (c *Codec) DisableUseEnumNumbers() *Codec {
+	c.UseEnumNumbers = false
+	return c
+}
+
+// ContentType always Returns "application/x-www-form-urlencoded; charset=utf-8"
 func (*Codec) ContentType(_ interface{}) string {
 	return "application/x-www-form-urlencoded; charset=utf-8"
 }
@@ -85,7 +94,7 @@ func (c *Codec) Encode(v any) (url.Values, error) {
 	var err error
 
 	if m, ok := v.(proto.Message); ok {
-		vs, err = EncodeValues(m, c.UseProtoNames)
+		vs, err = EncodeValues(m, c.UseProtoNames, c.UseEnumNumbers)
 	} else {
 		vs, err = c.Encoder.Encode(v)
 	}

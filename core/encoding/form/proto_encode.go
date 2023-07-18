@@ -14,19 +14,19 @@ import (
 )
 
 // EncodeValues encode a message into url values.
-func EncodeValues(msg proto.Message, useProtoNames bool) (url.Values, error) {
+func EncodeValues(msg proto.Message, useProtoNames, useEnumNumbers bool) (url.Values, error) {
 	if msg == nil || (reflect.ValueOf(msg).Kind() == reflect.Ptr && reflect.ValueOf(msg).IsNil()) {
 		return url.Values{}, nil
 	}
 	u := make(url.Values)
-	err := encodeByField(u, "", msg.ProtoReflect(), useProtoNames)
+	err := encodeByField(u, "", msg.ProtoReflect(), useProtoNames, useEnumNumbers)
 	if err != nil {
 		return nil, err
 	}
 	return u, nil
 }
 
-func encodeByField(u url.Values, path string, m protoreflect.Message, useProtoNames bool) (finalErr error) {
+func encodeByField(u url.Values, path string, m protoreflect.Message, useProtoNames, useEnumNumbers bool) (finalErr error) {
 	m.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
 		var key string
 		var newPath string
@@ -35,6 +35,7 @@ func encodeByField(u url.Values, path string, m protoreflect.Message, useProtoNa
 		} else {
 			key = fd.TextName()
 		}
+
 		if path == "" {
 			newPath = key
 		} else {
@@ -49,7 +50,7 @@ func encodeByField(u url.Values, path string, m protoreflect.Message, useProtoNa
 		switch {
 		case fd.IsList():
 			if v.List().Len() > 0 {
-				list, err := encodeRepeatedField(fd, v.List())
+				list, err := encodeRepeatedField(fd, v.List(), useEnumNumbers)
 				if err != nil {
 					finalErr = err
 					return false
@@ -60,7 +61,7 @@ func encodeByField(u url.Values, path string, m protoreflect.Message, useProtoNa
 			}
 		case fd.IsMap():
 			if v.Map().Len() > 0 {
-				mm, err := encodeMapField(fd, v.Map())
+				mm, err := encodeMapField(fd, v.Map(), useEnumNumbers)
 				if err != nil {
 					finalErr = err
 					return false
@@ -75,13 +76,13 @@ func encodeByField(u url.Values, path string, m protoreflect.Message, useProtoNa
 				u.Set(newPath, value)
 				return true
 			}
-			err = encodeByField(u, newPath, v.Message(), useProtoNames)
+			err = encodeByField(u, newPath, v.Message(), useProtoNames, useEnumNumbers)
 			if err != nil {
 				finalErr = err
 				return false
 			}
 		default:
-			value, err := EncodeField(fd, v)
+			value, err := EncodeField(fd, v, useEnumNumbers)
 			if err != nil {
 				finalErr = err
 				return false
@@ -94,10 +95,10 @@ func encodeByField(u url.Values, path string, m protoreflect.Message, useProtoNa
 	return nil
 }
 
-func encodeRepeatedField(fieldDescriptor protoreflect.FieldDescriptor, list protoreflect.List) ([]string, error) {
+func encodeRepeatedField(fieldDescriptor protoreflect.FieldDescriptor, list protoreflect.List, useEnumNumbers bool) ([]string, error) {
 	var values []string
 	for i := 0; i < list.Len(); i++ {
-		value, err := EncodeField(fieldDescriptor, list.Get(i))
+		value, err := EncodeField(fieldDescriptor, list.Get(i), useEnumNumbers)
 		if err != nil {
 			return nil, err
 		}
@@ -107,14 +108,14 @@ func encodeRepeatedField(fieldDescriptor protoreflect.FieldDescriptor, list prot
 	return values, nil
 }
 
-func encodeMapField(fieldDescriptor protoreflect.FieldDescriptor, mp protoreflect.Map) (map[string]string, error) {
+func encodeMapField(fieldDescriptor protoreflect.FieldDescriptor, mp protoreflect.Map, useEnumNumbers bool) (map[string]string, error) {
 	m := make(map[string]string)
 	mp.Range(func(k protoreflect.MapKey, v protoreflect.Value) bool {
-		key, err := EncodeField(fieldDescriptor.MapValue(), k.Value())
+		key, err := EncodeField(fieldDescriptor.MapValue(), k.Value(), useEnumNumbers)
 		if err != nil {
 			return false
 		}
-		value, err := EncodeField(fieldDescriptor.MapValue(), v)
+		value, err := EncodeField(fieldDescriptor.MapValue(), v, useEnumNumbers)
 		if err != nil {
 			return false
 		}
@@ -126,7 +127,7 @@ func encodeMapField(fieldDescriptor protoreflect.FieldDescriptor, mp protoreflec
 }
 
 // EncodeField encode proto message filed
-func EncodeField(fieldDescriptor protoreflect.FieldDescriptor, value protoreflect.Value) (string, error) {
+func EncodeField(fieldDescriptor protoreflect.FieldDescriptor, value protoreflect.Value, useEnumNumbers bool) (string, error) {
 	switch fieldDescriptor.Kind() { // nolint: exhaustive
 	case protoreflect.BoolKind:
 		return strconv.FormatBool(value.Bool()), nil
@@ -134,8 +135,12 @@ func EncodeField(fieldDescriptor protoreflect.FieldDescriptor, value protoreflec
 		if fieldDescriptor.Enum().FullName() == "google.protobuf.NullValue" {
 			return "null", nil
 		}
-		desc := fieldDescriptor.Enum().Values().ByNumber(value.Enum())
-		return string(desc.Name()), nil
+		if useEnumNumbers {
+			return strconv.FormatInt(int64(value.Enum()), 10), nil
+		} else {
+			desc := fieldDescriptor.Enum().Values().ByNumber(value.Enum())
+			return string(desc.Name()), nil
+		}
 	case protoreflect.StringKind:
 		return value.String(), nil
 	case protoreflect.BytesKind:
