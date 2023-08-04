@@ -19,6 +19,7 @@ var allowFromAPI = flag.Bool("allow_from_api", false, "allow from api can conver
 var useEncoding = flag.Bool("use_encoding", false, "use the framework encoding")
 var disableErrorBadRequest = flag.Bool("disable_error_bad_request", false, "disable error bad request")
 var disableTemplate = flag.Bool("disable_template", false, "disable use template")
+var disableClient = flag.Bool("disable_client", true, "disable use client")
 
 func main() {
 	flag.Parse()
