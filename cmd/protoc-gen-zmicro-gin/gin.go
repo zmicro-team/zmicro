@@ -136,6 +136,14 @@ func genService(gen *protogen.Plugin, file *protogen.File,
 		_, _ = fmt.Fprintf(os.Stderr,
 			"\u001B[31mWARN\u001B[m: execute template failed.\n")
 	}
+	if !*disableClient {
+		err = executeClientDesc(g, sd)
+		if err != nil {
+			_, _ = fmt.Fprintf(os.Stderr,
+				"\u001B[31mWARN\u001B[m: execute template failed.\n")
+		}
+	}
+
 }
 
 func hasHTTPRule(services []*protogen.Service) bool {
