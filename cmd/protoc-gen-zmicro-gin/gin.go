@@ -95,15 +95,17 @@ func genService(gen *protogen.Plugin, file *protogen.File,
 	g *protogen.GeneratedFile, service *protogen.Service, omitempty bool) {
 	var err error
 
-	if service.Desc.Options().(*descriptorpb.ServiceOptions).GetDeprecated() {
-		g.P("//")
-		g.P(deprecationComment)
+	comment := service.Comments.Leading.String() + service.Comments.Trailing.String()
+	if comment != "" {
+		comment = strings.TrimSpace(strings.TrimPrefix(strings.TrimSuffix(comment, "\n"), "//")) // nolint
 	}
 	// HTTP Server.
 	sd := &serviceDesc{
+		Deprecated:        service.Desc.Options().(*descriptorpb.ServiceOptions).GetDeprecated(),
 		ServiceType:       service.GoName,
 		ServiceName:       string(service.Desc.FullName()),
 		Metadata:          file.Desc.Path(),
+		Comment:           comment,
 		UseCustomResponse: *useCustomResponse,
 		RpcMode:           *rpcMode,
 		AllowFromAPI:      *allowFromAPI,
@@ -130,6 +132,9 @@ func genService(gen *protogen.Plugin, file *protogen.File,
 	if *disableTemplate {
 		err = executeServiceDesc(g, sd)
 	} else {
+		if sd.Deprecated {
+			g.P(deprecationComment)
+		}
 		err = sd.execute(g)
 	}
 	if err != nil {
@@ -143,7 +148,6 @@ func genService(gen *protogen.Plugin, file *protogen.File,
 				"\u001B[31mWARN\u001B[m: execute template failed.\n")
 		}
 	}
-
 }
 
 func hasHTTPRule(services []*protogen.Service) bool {
@@ -265,20 +269,21 @@ func buildMethodDesc(g *protogen.GeneratedFile, m *protogen.Method, method, path
 	}
 	comment := m.Comments.Leading.String() + m.Comments.Trailing.String()
 	if comment != "" {
-		comment = strings.TrimPrefix(strings.TrimSuffix(comment, "\n"), "//") // nolint
+		comment = strings.TrimSpace(strings.TrimPrefix(strings.TrimSuffix(comment, "\n"), "//")) // nolint
 		comment = "// " + m.GoName + comment
 	} else {
 		comment = "// " + m.GoName
 	}
 	return &methodDesc{
-		Name:    m.GoName,
-		Num:     methodSets[m.GoName],
-		Request: g.QualifiedGoIdent(m.Input.GoIdent),
-		Reply:   g.QualifiedGoIdent(m.Output.GoIdent),
-		Path:    transformPathParams(path),
-		Method:  method,
-		Comment: comment,
-		HasVars: len(vars) > 0,
+		Deprecated: m.Desc.Options().(*descriptorpb.MethodOptions).GetDeprecated(),
+		Name:       m.GoName,
+		Num:        methodSets[m.GoName],
+		Request:    g.QualifiedGoIdent(m.Input.GoIdent),
+		Reply:      g.QualifiedGoIdent(m.Output.GoIdent),
+		Path:       transformPathParams(path),
+		Method:     method,
+		Comment:    comment,
+		HasVars:    len(vars) > 0,
 	}
 }
 

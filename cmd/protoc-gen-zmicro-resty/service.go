@@ -7,13 +7,16 @@ import (
 )
 
 type serviceDesc struct {
+	Deprecated  bool   // 是否弃用
 	ServiceType string // Greeter
 	ServiceName string // helloworld.Greeter
 	Metadata    string // api/v1/helloworld.proto
+	Comment     string // 注释
 	Methods     []*methodDesc
 }
 
 type methodDesc struct {
+	Deprecated bool // 是否弃用
 	// method
 	Name    string // 方法名
 	Num     int    // 方法号
@@ -31,8 +34,15 @@ type methodDesc struct {
 
 func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 	// http interface defined
+	if s.Deprecated {
+		g.P(deprecationComment)
+	}
+	g.P("// ", clientInterfaceName(s.ServiceType), " ", s.Comment)
 	g.P("type ", clientInterfaceName(s.ServiceType), " interface {")
 	for _, m := range s.Methods {
+		if m.Deprecated {
+			g.P(deprecationComment)
+		}
 		g.P(m.Comment)
 		g.P(clientMethodName(g, m, true))
 	}
@@ -45,7 +55,11 @@ func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 	g.P("}")
 	g.P()
 	// http client factory method.
-	g.P("func New", s.ServiceType, "HTTPClient(c *", g.QualifiedGoIdent(transportHttpPackage.Ident("Client")), ") ", clientInterfaceName(s.ServiceType), " {")
+	if s.Deprecated {
+		g.P(deprecationComment)
+	}
+	g.P("// ", clientNewFunctionName(s.ServiceType), " ", s.Comment)
+	g.P("func ", clientNewFunctionName(s.ServiceType), "(c *", g.QualifiedGoIdent(transportHttpPackage.Ident("Client")), ") ", clientInterfaceName(s.ServiceType), " {")
 	g.P("return &", clientImplStructName(s.ServiceType), " {")
 	g.P("cc: c,")
 	g.P("}")
@@ -54,6 +68,10 @@ func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 
 	// http client implement methods.
 	for _, m := range s.Methods {
+		if m.Deprecated {
+			g.P(deprecationComment)
+		}
+		g.P(m.Comment)
 		g.P("func (c *", clientImplStructName(s.ServiceType), ")", clientMethodName(g, m, false), " {")
 		g.P("var err error")
 		g.P("var resp ", m.Reply)
@@ -105,6 +123,10 @@ func clientInterfaceName(serviceType string) string {
 
 func clientImplStructName(serviceType string) string {
 	return serviceType + "HTTPClientImpl"
+}
+
+func clientNewFunctionName(serviceType string) string {
+	return "New" + serviceType + "HTTPClient"
 }
 
 func clientMethodName(g *protogen.GeneratedFile, m *methodDesc, isDeclaration bool) string {

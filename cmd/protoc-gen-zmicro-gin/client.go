@@ -10,7 +10,6 @@ import (
 var _ = executeClientDesc
 
 func executeClientDesc(g *protogen.GeneratedFile, s *serviceDesc) (err error) {
-
 	methodSets := make(map[string]struct{})
 
 	// client interface defined
@@ -21,6 +20,9 @@ func executeClientDesc(g *protogen.GeneratedFile, s *serviceDesc) (err error) {
 			continue
 		}
 		methodSets[m.Name] = struct{}{}
+		if m.Deprecated {
+			g.P(deprecationComment)
+		}
 		g.P(m.Comment)
 		if s.RpcMode == "rpcx" {
 			g.P(clientMethodNameForRpcx(g, m))
@@ -43,6 +45,9 @@ func executeClientDesc(g *protogen.GeneratedFile, s *serviceDesc) (err error) {
 			continue
 		}
 		methodSets[m.Name] = struct{}{}
+		if m.Deprecated {
+			g.P(deprecationComment)
+		}
 		if s.RpcMode == "rpcx" {
 			g.P(clientMethodForRpcx(g, m, s.ServiceType))
 		} else {
@@ -75,7 +80,6 @@ func clientStructOptions(serverType string) string {
 		Validate func(context.Context, any) error
 	}`, typeName)
 	return result
-
 }
 
 func clientStruct(serverType string) string {
