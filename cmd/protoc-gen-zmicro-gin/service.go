@@ -18,9 +18,7 @@ type serviceDesc struct {
 	UseEncoding bool
 
 	// not used when disable template
-	MethodSets        map[string]*methodDesc // unique because additional_bindings
-	UseCustomResponse bool
-	AllowFromAPI      bool
+	MethodSets map[string]*methodDesc // unique because additional_bindings
 }
 
 type methodDesc struct {
@@ -152,7 +150,7 @@ func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 				}
 				g.P()
 				g.P("if err = shouldBind(&req); err != nil {")
-				if *disableErrorBadRequest {
+				if args.DisableErrorBadRequest {
 					g.P("carrier.Error(c, err)")
 				} else {
 					g.P("carrier.ErrorBadRequest(c, err)")
