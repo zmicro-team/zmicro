@@ -52,10 +52,10 @@ func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 			continue
 		}
 		methodSets[m.Name] = struct{}{}
-		g.P(m.Comment)
 		if m.Deprecated {
 			g.P(deprecationComment)
 		}
+		g.P(m.Comment)
 		if s.RpcMode == "rpcx" {
 			g.P(serverMethodNameForRpcx(g, m))
 		} else {
