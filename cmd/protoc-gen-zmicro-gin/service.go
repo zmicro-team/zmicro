@@ -7,9 +7,11 @@ import (
 )
 
 type serviceDesc struct {
+	Deprecated  bool   // 是否弃用
 	ServiceType string // Greeter
 	ServiceName string // helloworld.Greeter
 	Metadata    string // api/v1/helloworld.proto
+	Comment     string // 注释
 	Methods     []*methodDesc
 
 	RpcMode     string
@@ -22,6 +24,7 @@ type serviceDesc struct {
 }
 
 type methodDesc struct {
+	Deprecated bool // 是否弃用
 	// method
 	Name    string // 方法名
 	Num     int    // 方法号
@@ -40,6 +43,10 @@ type methodDesc struct {
 func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 	methodSets := make(map[string]struct{})
 	// http interface defined
+	if s.Deprecated {
+		g.P(deprecationComment)
+	}
+	g.P("// ", serverInterfaceName(s.ServiceType), " ", s.Comment)
 	g.P("type ", serverInterfaceName(s.ServiceType), " interface {")
 	for _, m := range s.Methods {
 		_, ok := methodSets[m.Name]
@@ -48,6 +55,9 @@ func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 		}
 		methodSets[m.Name] = struct{}{}
 		g.P(m.Comment)
+		if m.Deprecated {
+			g.P(deprecationComment)
+		}
 		if s.RpcMode == "rpcx" {
 			g.P(serverMethodNameForRpcx(g, m))
 		} else {
@@ -57,6 +67,9 @@ func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 	g.P("}")
 	g.P()
 	// register http server handler
+	if s.Deprecated {
+		g.P(deprecationComment)
+	}
 	g.P("func Register", s.ServiceType, "HTTPServer(g *", g.QualifiedGoIdent(ginPackage.Ident("RouterGroup")), ", srv ", serverInterfaceName(s.ServiceType), ") {")
 	g.P(`r := g.Group("")`)
 	g.P("{")
@@ -68,6 +81,9 @@ func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 	g.P()
 	// handler
 	for _, m := range s.Methods {
+		if m.Deprecated {
+			g.P(deprecationComment)
+		}
 		g.P("func ", serverHandlerMethodName(s.ServiceType, m), "(srv ", s.ServiceType, "HTTPServer", ") ", g.QualifiedGoIdent(ginPackage.Ident("HandlerFunc")), " {")
 		{ // gin.HandleFunc closure
 			g.P("return func(c *", g.QualifiedGoIdent(ginPackage.Ident("Context")), ") {")
