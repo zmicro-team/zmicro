@@ -7,23 +7,42 @@ import (
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
-const version = "0.1.0"
+const version = "0.2.0"
 
-var showVersion = flag.Bool("version", false, "print the version and exit")
-var omitempty = flag.Bool("omitempty", true, "omit if google.api is empty")
-var allowDeleteBody = flag.Bool("allow_delete_body", false, "allow delete body")
-var allowEmptyPatchBody = flag.Bool("allow_empty_patch_body", false, "allow empty patch body")
-var useCustomResponse = flag.Bool("use_custom_response", false, "use custom response encoder")
-var rpcMode = flag.String("rpc_mode", "rpcx", "rpc mode, default use rpcx rpc, options: rpcx,official")
-var allowFromAPI = flag.Bool("allow_from_api", false, "allow from api can convert different api format.")
-var useEncoding = flag.Bool("use_encoding", false, "use the framework encoding")
-var disableErrorBadRequest = flag.Bool("disable_error_bad_request", false, "disable error bad request")
-var disableTemplate = flag.Bool("disable_template", false, "disable use template")
-var disableClient = flag.Bool("disable_client", true, "disable use client")
+var args = struct {
+	ShowVersion            bool
+	Omitempty              bool
+	AllowDeleteBody        bool
+	AllowEmptyPatchBody    bool
+	RpcMode                string
+	UseEncoding            bool
+	DisableErrorBadRequest bool
+	DisableClient          bool
+}{
+	ShowVersion:            false,
+	Omitempty:              true,
+	AllowDeleteBody:        false,
+	AllowEmptyPatchBody:    false,
+	RpcMode:                "rpcx",
+	UseEncoding:            false,
+	DisableErrorBadRequest: false,
+	DisableClient:          true,
+}
+
+func init() {
+	flag.BoolVar(&args.ShowVersion, "version", false, "print the version and exit")
+	flag.BoolVar(&args.Omitempty, "omitempty", true, "omit if google.api is empty")
+	flag.BoolVar(&args.AllowDeleteBody, "allow_delete_body", false, "allow delete body")
+	flag.BoolVar(&args.AllowEmptyPatchBody, "allow_empty_patch_body", false, "allow empty patch body")
+	flag.StringVar(&args.RpcMode, "rpc_mode", "rpcx", "rpc mode, default use rpcx rpc, options: rpcx,official")
+	flag.BoolVar(&args.UseEncoding, "use_encoding", false, "use the framework encoding")
+	flag.BoolVar(&args.DisableErrorBadRequest, "disable_error_bad_request", false, "disable error bad request")
+	flag.BoolVar(&args.DisableClient, "disable_client", true, "disable use client")
+}
 
 func main() {
 	flag.Parse()
-	if *showVersion {
+	if args.ShowVersion {
 		fmt.Printf("protoc-gen-zmicro-gin %v\n", version)
 		return
 	}

@@ -32,7 +32,7 @@ func runProtoGen(gen *protogen.Plugin) error {
 		if !f.Generate {
 			continue
 		}
-		generateFile(gen, f, *omitempty)
+		generateFile(gen, f, args.Omitempty)
 	}
 	return nil
 }
@@ -81,9 +81,6 @@ func generateFileContent(gen *protogen.Plugin, file *protogen.File, g *protogen.
 	g.P("var _ = ", errorsPackage.Ident("New"))
 	g.P("var _ = ", contextPackage.Ident("TODO"))
 	g.P("var _ = ", ginPackage.Ident("New"))
-	if *useEncoding && !*disableTemplate {
-		g.P("var _ = ", netHttpPackage.Ident("HandleFunc"))
-	}
 	g.P()
 
 	for _, service := range file.Services {
@@ -101,15 +98,13 @@ func genService(gen *protogen.Plugin, file *protogen.File,
 	}
 	// HTTP Server.
 	sd := &serviceDesc{
-		Deprecated:        service.Desc.Options().(*descriptorpb.ServiceOptions).GetDeprecated(),
-		ServiceType:       service.GoName,
-		ServiceName:       string(service.Desc.FullName()),
-		Metadata:          file.Desc.Path(),
-		Comment:           comment,
-		UseCustomResponse: *useCustomResponse,
-		RpcMode:           *rpcMode,
-		AllowFromAPI:      *allowFromAPI,
-		UseEncoding:       *useEncoding,
+		Deprecated:  service.Desc.Options().(*descriptorpb.ServiceOptions).GetDeprecated(),
+		ServiceType: service.GoName,
+		ServiceName: string(service.Desc.FullName()),
+		Metadata:    file.Desc.Path(),
+		Comment:     comment,
+		RpcMode:     args.RpcMode,
+		UseEncoding: args.UseEncoding,
 	}
 	for _, method := range service.Methods {
 		if method.Desc.IsStreamingClient() || method.Desc.IsStreamingServer() {
@@ -129,19 +124,13 @@ func genService(gen *protogen.Plugin, file *protogen.File,
 	if len(sd.Methods) == 0 {
 		return
 	}
-	if *disableTemplate {
-		err = executeServiceDesc(g, sd)
-	} else {
-		if sd.Deprecated {
-			g.P(deprecationComment)
-		}
-		err = sd.execute(g)
-	}
+
+	err = executeServiceDesc(g, sd)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr,
 			"\u001B[31mWARN\u001B[m: execute template failed.\n")
 	}
-	if !*disableClient {
+	if !args.DisableClient {
 		err = executeClientDesc(g, sd)
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr,
@@ -205,7 +194,7 @@ func buildHTTPRule(g *protogen.GeneratedFile, m *protogen.Method, rule *annotati
 	case method == http.MethodDelete:
 		if body != "" {
 			md.HasBody = true
-			if !*allowDeleteBody {
+			if !args.AllowDeleteBody {
 				md.HasBody = false
 				_, _ = fmt.Fprintf(os.Stderr, "\u001B[31mWARN\u001B[m: %s %s body should not be declared.\n", method, path)
 			}
@@ -217,7 +206,7 @@ func buildHTTPRule(g *protogen.GeneratedFile, m *protogen.Method, rule *annotati
 			md.HasBody = true
 		} else {
 			md.HasBody = false
-			if !*allowEmptyPatchBody {
+			if !args.AllowEmptyPatchBody {
 				_, _ = fmt.Fprintf(os.Stderr, "\u001B[31mWARN\u001B[m: %s %s is does not declare a body.\n", method, path)
 			}
 		}
