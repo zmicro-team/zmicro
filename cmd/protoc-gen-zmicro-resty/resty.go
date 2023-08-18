@@ -245,8 +245,8 @@ func buildMethodDesc(g *protogen.GeneratedFile, m *protogen.Method, method, path
 	}
 	comment := m.Comments.Leading.String() + m.Comments.Trailing.String()
 	if comment != "" {
-		comment = strings.TrimPrefix(strings.TrimSuffix(comment, "\n"), "//") // nolint
-		comment = "// " + m.GoName + comment
+		comment = strings.TrimSpace(strings.TrimPrefix(strings.TrimSuffix(comment, "\n"), "//")) // nolint
+		comment = "// " + m.GoName + " " + comment
 	} else {
 		comment = "// " + m.GoName
 	}
