@@ -13,6 +13,9 @@ func executeClientDesc(g *protogen.GeneratedFile, s *serviceDesc) (err error) {
 	methodSets := make(map[string]struct{})
 
 	// client interface defined
+	if s.Deprecated {
+		g.P(deprecationComment)
+	}
 	g.P("type ", clientInterfaceName(s.ServiceType), " interface {")
 	for _, m := range s.Methods {
 		_, ok := methodSets[m.Name]
