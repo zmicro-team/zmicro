@@ -16,13 +16,17 @@ type CallSettings struct {
 	noAuth bool
 }
 
-func DefaultCallOption(path string) CallSettings {
-	return CallSettings{
+func DefaultCallOption(path string, opts ...CallOption) CallSettings {
+	cs := CallSettings{
 		contentType: "application/json",
 		Path:        path,
 		header:      make(http.Header),
 		noAuth:      false,
 	}
+	for _, opt := range opts {
+		opt(&cs)
+	}
+	return cs
 }
 
 // CallOption is an option used by Invoke to control behaviors of RPC calls.

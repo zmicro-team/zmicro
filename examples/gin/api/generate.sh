@@ -15,5 +15,6 @@ for PROTO in $PROTOS; do
     --zmicro-gin_opt allow_empty_patch_body=true \
     --zmicro-resty_out=. \
     --zmicro-resty_opt paths=source_relative \
+    --zmicro-resty_opt use_invoke2=true \
     $PROTO
 done
