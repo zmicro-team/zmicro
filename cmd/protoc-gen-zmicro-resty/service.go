@@ -76,10 +76,7 @@ func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 		g.P("var err error")
 		g.P("var resp ", m.Reply)
 		g.P()
-		g.P("settings := ", g.QualifiedGoIdent(transportHttpPackage.Ident("DefaultCallOption")), `("`, m.Path, `")`)
-		g.P("for _, opt := range opts {")
-		g.P("opt(&settings)")
-		g.P("}")
+		g.P("settings := ", g.QualifiedGoIdent(transportHttpPackage.Ident("DefaultCallOption")), `("`, m.Path, `", opts...)`)
 
 		if m.HasVars {
 			g.P("path := c.cc.EncodeURL(settings.Path, req, ", strconv.FormatBool(!m.HasBody), ")")
@@ -99,13 +96,17 @@ func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 				g.P("}")
 			}
 		}
-		g.P("ctx = ", g.QualifiedGoIdent(transportHttpPackage.Ident("WithValueCallOption")), "(ctx, settings)")
 
 		reqValue := "nil"
 		if m.HasBody {
 			reqValue = "req" + m.Body
 		}
-		g.P(`err = c.cc.Invoke(ctx, "`, m.Method, `", path, `, reqValue, ", &resp", m.ResponseBody, ")")
+		if args.UseInvoke2 {
+			g.P(`err = c.cc.Invoke2(ctx, "`, m.Method, `", path, `, reqValue, ", &resp", m.ResponseBody, ", settings)")
+		} else {
+			g.P("ctx = ", g.QualifiedGoIdent(transportHttpPackage.Ident("WithValueCallOption")), "(ctx, settings)")
+			g.P(`err = c.cc.Invoke(ctx, "`, m.Method, `", path, `, reqValue, ", &resp", m.ResponseBody, ")")
+		}
 		g.P("if err != nil {")
 		g.P("return nil, err")
 		g.P("}")
