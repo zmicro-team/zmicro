@@ -18,11 +18,11 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/zmicro-team/zmicro/core/log"
-	"github.com/zmicro-team/zmicro/core/util/env"
 )
 
 var (
-	slowThreshold = time.Millisecond * 500
+	responseBodyLimit = 2048 // <=0 mean not limit
+	slowThreshold     = time.Millisecond * 500
 )
 
 type rspWriter struct {
@@ -117,16 +117,19 @@ func Log() gin.HandlerFunc {
 				"body":   reqBody,
 			}))
 
-			if env.Get() == env.Develop {
-				respBody := "skip response body"
-				if !skipResponseBody(c) {
+			respBody := "skip response body"
+			if !skipResponseBody(c) {
+				if responseBodyLimit > 0 && respBodyBuf.Len() >= responseBodyLimit {
+					respBody = "skip larger response body"
+				} else {
 					respBody = respBodyBuf.String()
 				}
-				fields = append(fields, zap.Any("rsp", map[string]interface{}{
-					"header": copyHeader(c.Writer.Header()),
-					"body":   respBody,
-				}))
 			}
+			fields = append(fields, zap.Any("rsp", map[string]interface{}{
+				"header": copyHeader(c.Writer.Header()),
+				"body":   respBody,
+			}))
+
 			// slow log
 			if duration > slowThreshold {
 				log.Warn("slow", fields...)
