@@ -76,7 +76,7 @@ func executeServiceDesc(g *protogen.GeneratedFile, s *serviceDesc) error {
 		g.P("var err error")
 		g.P("var resp ", m.Reply)
 		g.P()
-		g.P("settings := ", g.QualifiedGoIdent(transportHttpPackage.Ident("DefaultCallOption")), `("`, m.Path, `", opts...)`)
+		g.P(`settings := c.cc.CallSetting("`, m.Path, `", opts...)`)
 
 		if m.HasVars {
 			g.P("path := c.cc.EncodeURL(settings.Path, req, ", strconv.FormatBool(!m.HasBody), ")")
