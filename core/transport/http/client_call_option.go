@@ -8,6 +8,8 @@ import (
 type CallSettings struct {
 	// Content-Type
 	contentType string
+	// Accept
+	accept string
 	// custom header
 	header http.Header
 	// Path overwrite api call
@@ -16,9 +18,11 @@ type CallSettings struct {
 	noAuth bool
 }
 
+// Deprecated: use Client.CallSetting(path string, opts ...CallOption) api.
 func DefaultCallOption(path string, opts ...CallOption) CallSettings {
 	cs := CallSettings{
 		contentType: "application/json",
+		accept:      "application/json",
 		Path:        path,
 		header:      make(http.Header),
 		noAuth:      false,
@@ -37,6 +41,13 @@ type CallOption func(cs *CallSettings)
 func WithCoContentType(contentType string) CallOption {
 	return func(cs *CallSettings) {
 		cs.contentType = contentType
+	}
+}
+
+// WithCoAccept use encoding.MIMExxx
+func WithCoAccept(accept string) CallOption {
+	return func(cs *CallSettings) {
+		cs.accept = accept
 	}
 }
 
