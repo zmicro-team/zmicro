@@ -26,8 +26,6 @@ type Client struct {
 	codec *encoding.Encoding
 	// A TokenSource is anything that can return a token.
 	tokenSource oauth2.TokenSource
-	// no auth
-	noAuth bool
 	// validate request
 	validate func(any) error
 	// call option
@@ -48,9 +46,10 @@ func WithTokenSource(t oauth2.TokenSource) ClientOption {
 	}
 }
 
+// Deprecated: use WithCallOption(WithCoNoAuth) instead.
 func WithNoAuth() ClientOption {
 	return func(c *Client) {
-		c.noAuth = true
+		c.callOptions = append(c.callOptions, WithCoNoAuth())
 	}
 }
 
@@ -135,7 +134,7 @@ func (c *Client) invokeInner(ctx context.Context, method, path string, in, out a
 		}
 		r = r.SetBody(reqBody)
 	}
-	if !c.noAuth && !settings.noAuth {
+	if !settings.noAuth {
 		if c.tokenSource == nil {
 			return errors.New("transport: token source should be not nil")
 		}
