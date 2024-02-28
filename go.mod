@@ -15,7 +15,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.1.1
 	github.com/rpcxio/rpcx-etcd v0.3.2
 	github.com/rpcxio/rpcx-plugins v0.0.0-20220730073026-120f5ed14272
-	github.com/smallnest/rpcx v1.8.11
+	github.com/smallnest/rpcx v1.8.24
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.8.4
@@ -53,6 +53,7 @@ require (
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
+	github.com/go-echarts/go-echarts/v2 v2.3.2 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
@@ -74,6 +75,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/jamiealquiza/tachymeter v2.0.0+incompatible // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/juju/ratelimit v1.0.2 // indirect
@@ -105,6 +107,7 @@ require (
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/smallnest/quick v0.1.0 // indirect
+	github.com/smallnest/statsview v0.0.0-20231119085602-10700f9abec4 // indirect
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
